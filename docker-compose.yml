@@ -1,0 +1,49 @@
+version: '2'
+
+services:
+    php:
+        build: ./env-config/php/
+        container_name: php-fws
+        ports: 
+            - "8002:80"
+        volumes: 
+            - ./src:/var/www/html/
+            - ./env-config/apache/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
+            - ./env-config/php/php.ini:/etc/php5/apache2/conf.d/php.ini
+            - ./env-config/php/php.ini:/usr/local/etc/php/php.ini
+        working_dir: /var/www/html
+    composer:
+        image: composer/composer
+        container_name: composer-fws
+        volumes_from:
+            - php
+        working_dir: /var/www/html/
+        command: install
+    mysql:
+        image: mysql:5.6.36
+        container_name: mysql-fws
+        volumes: 
+            - /srv/docker/mysql:/var/lib/mysql
+        ports:
+            - "3307:3306"
+        environment:            
+            - MYSQL_ROOT_PASSWORD=admin
+            - MYSQL_DATABASE=controlfws
+            - MYSQL_USER=controlfws
+            - MYSQL_PASSWORD=T@?UF^ptP?t*
+        restart: always
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin-fws
+        ports:
+            - "8081:80"
+        environment:
+            - PMA_ARBITRARY=1
+            - PMA_HOST=mysql
+        restart: always
+        depends_on:
+            - "mysql"
+    node:
+        build: ./src/client
+        container_name: node-fws
+      
