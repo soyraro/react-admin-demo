@@ -1,10 +1,10 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import { Redirect } from 'react-router'
-import { alertMessage } from '../../Commons/utils'
+import { alertMessage } from 'Commons/utils'
 import { withRouter } from 'react-router'
-import '../../Layout/static/assets/pages/css/login.min.css'
-import '../../Layout/static/assets/custom.css'
+import 'Layout/static/assets/pages/css/login.min.css'
+import 'Layout/static/custom.scss'
 
 class Login extends Component {
 

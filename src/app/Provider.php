@@ -16,6 +16,11 @@ class Provider extends Model
      */
     protected $dates = ['deleted_at'];
     
+    protected $fillable = ['legal_name', 'cuit', 'country_id', 'province_id', 'town', 'address', 'zipcode', 'phone', 'email', 'web', 'observations'];
+
+    protected $hidden = ['deleted_at', 'pivot'];
+
+    
     public function country()
     {
         return $this->belongsTo('App\Country');

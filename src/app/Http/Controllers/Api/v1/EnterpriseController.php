@@ -139,7 +139,7 @@ class EnterpriseController extends Controller
     }
     
     /**
-     * PUT|PATCH / enterprises/{$id}
+     * PUT|PATCH /enterprises/{$id}
      */
     public function update(Request $request, /*int*/ $id)
     {
@@ -152,7 +152,7 @@ class EnterpriseController extends Controller
             $this->validate($request, [
                 'id' => 'sometimes|required|integer',
                 'legal_name' => 'sometimes|required|max:70',
-                'cuit' => 'sometimes|required|max:13',
+                'cuit' => 'sometimes|required|max:13|unique:enterprises,cuit,'.$id,
                 'country' => 'sometimes|integer',
                 'province' => 'sometimes|integer',
                 'town' => 'sometimes|required|max:40',

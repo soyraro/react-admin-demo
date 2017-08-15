@@ -2,6 +2,8 @@ import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import config from '../../config/app.js'
 import { Link } from 'react-router-dom'
+import { withRouter } from 'react-router'
+import queryString from 'query-string'
 import FlashMessages from '../../FlashMessages'
 import Select from 'react-select'
 import ProvidersTable from './table'
@@ -16,6 +18,10 @@ class ProvidersList extends Component {
         fetchCountryList: PropTypes.func.isRequired,
         fetchProviderList: PropTypes.func.isRequired,
         onRemoveProvider: PropTypes.func.isRequired,
+        location: PropTypes.object.isRequired,
+        history: PropTypes.object.isRequired,  
+        flashSuccess: PropTypes.func.isRequired,  
+        flashError: PropTypes.func.isRequired
     }
 
     constructor(props) {
@@ -24,7 +30,7 @@ class ProvidersList extends Component {
         // bind actions
         this.filterByCountry = this.filterByCountry.bind(this);
 
-        // define table columns
+        // define default filters
         this.state = {           
             filters: {
                 country: null,               
@@ -34,11 +40,14 @@ class ProvidersList extends Component {
 
     componentDidMount() {
 
+        const query = queryString.parse(location.search);
+
         // fetch data
         this.props.fetchCountryList().then(()=>{
 
             // apply predefined filters
-            this.state.filters.country = _.find(this.props.countries, {id: config.defaults.country});
+            const country_id = query.country_id ? query.country_id : config.defaults.country;
+            this.state.filters.country = _.find(this.props.countries, {id: parseInt(country_id)});
             this.filter();
         }); 
     }
@@ -47,8 +56,15 @@ class ProvidersList extends Component {
      * Gathers all current filters and dispatchs an action
      */
     filter() { 
-        this.props.fetchProviderList({
+
+        const filters = {
             country_id: this.state.filters.country.id
+        }
+
+        this.props.fetchProviderList(filters);
+
+        this.props.history.push({
+            search: queryString.stringify(filters)
         });
     }
 
@@ -73,11 +89,22 @@ class ProvidersList extends Component {
 
         const self = this;
 
+        const provider = _.find(this.props.providers, {id});
+        const name = provider.legal_name;
+
         swal({
             ... config.tables.onDeleteSwal,
             text: "Se eliminará el proveedor",
         }).then(function () {
-            self.props.onRemoveProvider(id);
+            self.props.onRemoveProvider(id).then(_=>{
+                self.props.flashSuccess({
+                    text: "Se ha eliminado el proveedor " + name
+                })
+            }).catch(err=>{
+                this.props.flashError({
+                    text: "Hubo un error al eliminar el proveedor " + name
+                })
+            }); 
         }, function(dismiss) {  
             console.log("dismiss deleting");          
         })  
@@ -108,7 +135,7 @@ class ProvidersList extends Component {
                                     <div className="col-md-6">
                                         <div className="row">
 
-                                            <div className="col-md-4">
+                                            <div className="col-md-4 form-group">
                                                 <Select
                                                     name="country"
                                                     placeholder="País..."
@@ -143,4 +170,4 @@ class ProvidersList extends Component {
     }
 }
 
-export default ProvidersList
+export default withRouter(ProvidersList)

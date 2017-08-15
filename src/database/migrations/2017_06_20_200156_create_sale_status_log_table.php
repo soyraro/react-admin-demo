@@ -13,17 +13,16 @@ class CreateSaleStatusLogTable extends Migration
      */
     public function up()
     {
-        Schema::create('sale_status_log', function (Blueprint $table) {
+        Schema::create('sale_status_logs', function (Blueprint $table) {
                         
-            $table->integer('sale_status_id')->unsigned()->nullable()->index();
+            $table->increments('id');
+            $table->integer('sale_status_id')->unsigned();
             $table->foreign('sale_status_id')->references('id')
-                ->on('sale_status')->onDelete('restrict');
+                ->on('sale_statuses')->onDelete('restrict');
 
-            $table->integer('sale_id')->unsigned()->nullable()->index();
+            $table->integer('sale_id')->unsigned();
             $table->foreign('sale_id')->references('id')
                 ->on('sales')->onDelete('cascade');
-            
-            $table->primary(['sale_id', 'sale_status_id']);
             
             $table->timestamps();
         });
@@ -36,6 +35,6 @@ class CreateSaleStatusLogTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sale_status_log');
+        Schema::dropIfExists('sale_status_logs');
     }
 }

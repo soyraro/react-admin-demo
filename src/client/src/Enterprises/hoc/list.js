@@ -29,8 +29,8 @@ const mapDispatchToProps = dispatch => {
     return {
         fetchCountryList: () => { return dispatch(fetchCountryList()); },
         fetchEnterpriseList: (filters) => { return dispatch(fetchEnterpriseList(filters)); },
-        onAddEnterprise: (data) => { dispatch(addEnterprise(data)) },
-        onSaveEnterprise: (data) => { dispatch(saveEnterprise(data)) },
+        onAddEnterprise: (data) => { return dispatch(addEnterprise(data)) },
+        onSaveEnterprise: (data) => { return dispatch(saveEnterprise(data)) },
         onRemoveEnterprise: (id) => { return dispatch(removeEnterprise(id)) },
         onEnterpriseListSuccess: (list) => { dispatch(enterpriseListSuccess(list)) }
     }

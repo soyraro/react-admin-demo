@@ -1,16 +1,25 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
-import FlashMessages from '../../FlashMessages'
-import ReactQuill from 'react-quill'
-import Select from 'react-select'
+import queryString from 'query-string'
+import View from './form.view'
 
 class Form extends Component {
 
     static defaultProps = {
         data: {
-            country: {},
-            province: {}
+            'id': '',
+            'legal_name': '',
+            'cuit': '',
+            'town': '',
+            'address': '',
+            'zipcode': '',
+            'phone': '',       
+            'observations': '',
+            'email': '',
+            'web': '',
+            'country': {},
+            'province': {},
         }
     };
 
@@ -23,18 +32,21 @@ class Form extends Component {
         getProvinces: PropTypes.func.isRequired,
         onSaveProvider: PropTypes.func.isRequired,
         unselectProvider: PropTypes.func.isRequired,
-        history: PropTypes.object.isRequired
+        history: PropTypes.object.isRequired,  
+        flashSuccess: PropTypes.func.isRequired,  
+        flashError: PropTypes.func.isRequired
     }
 
     constructor(props) {
 
         super(props);
-
-        this.state = Object.assign({}, props, {
+      
+        this.state = Object.assign({}, Form.defaultProps, props, {
             isEdition: props.match.params.id ? true : false     
         });
 
         // events
+        this.handleCountryChange = this.handleCountryChange.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleQuillChange = this.handleQuillChange.bind(this);
         this.handleOptionChange = this.handleOptionChange.bind(this);
@@ -55,6 +67,7 @@ class Form extends Component {
                 this.fetchData();
             });
         } else {
+            this.clear();
             this.fetchData();
         }   
     }
@@ -94,12 +107,14 @@ class Form extends Component {
         this.props.getProvinces(country.id).then(_=> {
 
             // set predefined province
-            const province = province ? province : this.props.provinces[1]; 
+            const province = province ? province : self.props.provinces[1]; 
            
-            self.setState({ data: Object.assign(this.state.data, {
-                country,
-                province
-            }) });
+            self.setState({ 
+                data: Object.assign({}, self.state.data, {
+                    country,
+                    province
+                }) 
+            });
         })
     }
 
@@ -147,162 +162,74 @@ class Form extends Component {
         this.setState({ data });
     }
 
-    save() {
-        const data = this.state;        
-        this.props.onSaveProvider(data);  
+    save(data) {
+
+        // will redirect to filtered list after saving
+        const redirection = {
+            pathname: '/proveedores',
+            search: queryString.stringify({
+                country_id: data.country
+            })
+        }     
+
+        const self = this;
+      
+        if(!data.id) {
+            this.props.onAddProvider(data).then(_=>{
+                self.props.flashSuccess({
+                    text: "Se ha guardado los datos"
+                });
+                self.clear();
+                self.props.history.push(redirection);
+            }).catch(err=>{
+                self.props.flashError({
+                    text: "Hubo un error al guardar los datos"
+                })
+            });  
+        } else {
+            this.props.onSaveProvider(data).then(_=>{
+                self.props.flashSuccess({
+                    text: "Se ha guardado los datos"
+                });
+                self.clear();
+                self.props.history.push(redirection);
+            }).catch(err=>{
+                self.props.flashError({
+                    text: "Hubo un error al guardar los datos"
+                })
+            });    
+        }      
     }
 
     cancel() {
-        this.props.unselectProvider();  
-    }   
+        this.clear();
+        this.backToList();
+    }
+
+    clear() {
+        this.setState({ data: Form.defaultProps.data }); // reset state
+        this.props.unselectProvider(); // redux action
+    }
+
+    backToList() {
+        this.props.history.goBack(); // redirect
+    }
 
     render() {
         
-        const { history } = this.props
-
-        return (
-
-            <div className="portlet light bordered">
-                <div className="portlet-title">
-
-                    <div className="messages">
-                        <FlashMessages />
-                    </div>
-
-                    <div className="row">
-                        <div className="col-xs-12 col-sm-6">
-                            <div className="caption font-red-sunglo">
-                                <i className="icon-settings font-red-sunglo"></i>
-                                <span className="caption-subject bold uppercase">
-                                    { this.props.data.id ? ' Edición' : ' Alta proveedor' }</span>
-                            </div>     
-                        </div>
-
-                        <div className="col-xs-12 col-sm-6">
-                            <button className="btn green pull-right" onClick={()=>{history.goBack()}} >
-                                <i className="fa fa-arrow-left" /> Volver
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className="portlet-body form">
-                    <form className="" role="form">
-
-                        <div className="form-body">
-
-                            <div className="row">
-                                <div className="col-xs-12 col-sm-4">
-                                    <div className="form-group">
-                                        <label>Razón Social</label>
-                                        <div className="input-group full-width">                                   
-                                            <input type="text" 
-                                                className="form-control" 
-                                                placeholder="Razón Social"
-                                                name="legal_name"
-                                                value={this.state.data.legal_name}
-                                                onChange={this.handleInputChange} />                                            
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="col-xs-12 col-sm-3 col-md-2">
-                                    <div className="form-group">
-                                        <label>CUIT</label>
-                                        <div className="input-group">                                   
-                                            <input type="text" 
-                                                className="form-control" 
-                                                placeholder="CUIT"
-                                                name="cuit"
-                                                value={this.state.data.cuit}
-                                                onChange={this.handleInputChange}  />
-                                        </div>
-                                    </div>
-                                </div>                                
-                            </div>
-
-                            <div className="row">
-                                <div className="col-xs-6 col-sm-3">
-                                    <div className="form-group">
-                                        <label>País</label>
-                                        { this.props.countries.length > 0 && this.state.data.country &&
-                                            <Select
-                                                name="country"
-                                                placeholder="Seleccione..."
-                                                value={this.state.data.country.id}
-                                                options={this.props.countries}
-                                                onChange={obj=>{this.handleCountryChange(obj)}}
-                                                />
-                                        }                                  
-                                    </div>
-                                </div>
-
-                                <div className="col-xs-6 col-sm-3">
-                                    <div className="form-group">
-                                        <label>Provincia</label>
-                                        { this.props.provinces.length > 0 && this.state.data.province &&
-                                            <Select
-                                                name="province"
-                                                placeholder="Seleccione..."
-                                                noResultsText="Sin resultados"
-                                                value={this.state.data.province.id}
-                                                options={this.props.provinces}
-                                                onChange={obj=>{this.handleOptionChange("province", obj)}}
-                                                />
-                                        }
-                                    </div>
-                                </div>
-
-                                <div className="col-xs-6 col-sm-3">
-                                    <div className="input-group  full-width">
-                                        <label>Localidad</label>
-                                        <input type="text" 
-                                            className="form-control" 
-                                            placeholder="Localidad" 
-                                            name="town"
-                                            value={this.state.data.town}
-                                            onChange={this.handleInputChange} />
-                                    </div>
-                                </div>
-
-                                <div className="col-xs-6 col-sm-1">
-                                    <div className="input-group">
-                                        <label>Código Postal</label>
-                                        <input type="text" 
-                                            className="form-control" 
-                                            placeholder="Código Postal" 
-                                            name="zipcode"
-                                            value={this.state.data.zipcode}
-                                            onChange={this.handleInputChange} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Teléfonos</label>
-                                <input type="text" 
-                                    className="form-control" 
-                                    placeholder="Teléfonos"
-                                    name="phone"
-                                    value={this.state.data.phone}
-                                    onChange={this.handleInputChange} />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Observaciones</label>
-                                <ReactQuill className="form-control" 
-                                    name="observations"
-                                    value={this.state.data.observations}
-                                    onChange={value=>this.handleQuillChange("observations", value)} ></ReactQuill>
-                            </div>       
-                        </div>
-                        <div className="form-actions">
-                            <button type="button" className="btn blue" onClick={this.save}>Guardar</button>
-                            <button type="button" className="btn default" onClick={this.cancel}>Cancelar</button>                        
-                        </div>
-                    </form>
-                </div>
-            </div>
-        );
+       return ( 
+            <View data={this.state.data} 
+                isEdition={this.state.isEdition}
+                countries={this.props.countries}
+                provinces={this.props.provinces}
+                handleCountryChange={this.handleCountryChange}
+                handleInputChange={this.handleInputChange}
+                handleQuillChange={this.handleQuillChange}
+                handleOptionChange ={this.handleOptionChange}
+                save={this.save}
+                cancel={this.cancel}
+            /> 
+        )
     }
 }
 

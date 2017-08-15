@@ -20,6 +20,9 @@ const withFlashMessages = (WrappedComponent) => {
         message.type = 'danger';
         return addFlashMessage(message);
     }
+    const cleanupFlashMessages = () => {
+        return cleanupFlashMessages();
+    }
 
     const mapDispatchToProps = (dispatch, props) => {
          
@@ -29,6 +32,7 @@ const withFlashMessages = (WrappedComponent) => {
             flashError: (message) => { dispatch(flashError(message)) },
             flashWarning: (message) => { dispatch(flashWarning(message)) },
             flashDanger: (message) => { dispatch(flashDanger(message)) },
+            cleanupFlashMessages: () => { dispatch(cleanupFlashMessages()) }
         }
     }
     return connect(null, mapDispatchToProps)(WrappedComponent)

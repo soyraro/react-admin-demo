@@ -2,13 +2,11 @@ import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import config from '../../config/app.js'
 import { Link } from 'react-router-dom'
+import { withRouter } from 'react-router'
 import ProductsTable from './table'
 import FlashMessages from '../../FlashMessages'
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table'
-import Actions from './tableActions'
-import _ from 'lodash'
-
 import swal from 'sweetalert2'
+import _ from 'lodash'
 
 class ProductsList extends Component {
 
@@ -16,16 +14,15 @@ class ProductsList extends Component {
         products: PropTypes.array.isRequired,
         fetchProductList: PropTypes.func.isRequired,
         unselectProduct: PropTypes.func.isRequired,
-        onRemoveProduct: PropTypes.func.isRequired
+        onRemoveProduct: PropTypes.func.isRequired,
+        location: PropTypes.object.isRequired,
+        history: PropTypes.object.isRequired,  
+        flashSuccess: PropTypes.func.isRequired,  
+        flashError: PropTypes.func.isRequired
     }
 
     constructor(props) {
-       super(props)
-       
-        // define table columns
-        this.state = {
-            
-        }
+       super(props)       
     }
 
     componentWillMount() {
@@ -44,13 +41,24 @@ class ProductsList extends Component {
       
         const self = this;
 
+        const product = _.find(this.props.products, {id});
+        const name = product.name;
+
         swal({
             ... config.tables.onDeleteSwal,
-            text: "Se eliminará el producto",
+            text: "Se eliminará el producto " + name,
         }).then(function () {
-            self.props.onRemoveProduct(id);
+            self.props.onRemoveProduct(id).then(_=>{
+                self.props.flashSuccess({
+                    text: "Se ha eliminado el producto " + name
+                })
+            }).catch(err=>{
+                self.props.flashError({
+                    text: "Hubo un error al eliminar el producto " + name
+                })
+            }); 
         }, function(dismiss) {  
-            console.log("dismiss deleting");          
+               
         })  
     }
  
@@ -97,4 +105,4 @@ class ProductsList extends Component {
     }
 }
 
-export default ProductsList
+export default withRouter(ProductsList)

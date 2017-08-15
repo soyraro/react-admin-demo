@@ -7,7 +7,7 @@ import withFlashMessages from '../../FlashMessages/hoc/with-flash-messages'
 
 const mapStateToProps = (store, ownProps) => {  
     return {
-        products: store.products.list
+        products: store.products.list || []
     }
 }
 

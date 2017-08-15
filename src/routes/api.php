@@ -56,6 +56,13 @@ Route::group([
              */
             Route::get('/users', 'UserController@index');
             Route::get('/users/{id}', 'UserController@show')->where('id', '[0-9]+');
+            Route::get('/users/roles', 'UserController@roles');
+            
+            /**
+             * Tasks
+             */
+            Route::get('/users/{user_id}/tasks', 'TaskController@index')->where('user_id', '[0-9]+');
+            Route::get('/tasks/{id}', 'TaskController@show')->where('id', '[0-9]+');
             
             /**
              * Enterprise getters
@@ -105,6 +112,19 @@ Route::group([
             Route::get('/countries', 'CountryController@index');
             Route::get('/countries/{country_id}/provinces', 'CountryController@provinces')->where('country_id', '[0-9]+');
             
+            /**
+             * Currencies
+             */
+            Route::get('/currencies', 'CurrencyController@index');
+            
+            /**
+             * Sales
+             */
+            Route::get('/sales', 'SaleController@index');
+            Route::get('/sales/{id}', 'SaleController@show')->where('id', '[0-9]+');;
+            Route::get('/sales/statuses', 'SaleController@statuses');
+            Route::get('/sales/contact-means', 'SaleController@contactMeans');
+            Route::get('/sales/shipment-types', 'SaleController@shipmentTypes');
             
             /***************
              * Private API
@@ -123,7 +143,15 @@ Route::group([
                 Route::post('/users/{user_id}/image', 'UserImageController@store')->where('id', '[0-9]+'); 
 
                 /**
-                 *  Enterprise CRUD routes
+                 *  Tasks
+                 */
+                Route::post('/tasks', 'TaskController@store');
+                Route::put('/tasks/{id}', 'TaskController@update')->where('id', '[0-9]+');
+                Route::put('/tasks/{id}/viewed', 'TaskController@viewed')->where('id', '[0-9]+');
+                Route::delete('/tasks/{id}', 'TaskController@destroy')->where('id', '[0-9]+');
+                                
+                /**
+                 * Enterprise CRUD routes
                  */   
                 Route::post('/enterprises', 'EnterpriseController@store');
                 Route::put('/enterprises/{id}', 'EnterpriseController@update')->where('id', '[0-9]+');
@@ -141,6 +169,8 @@ Route::group([
                  */
                 Route::post('/enterprises/{enterprise_id}/contacts', 'ContactEnterpriseController@store')->where('enterprise_id', '[0-9]+');
                 Route::put('/enterprises/{enterprise_id}/contacts/{contact_id}', 'ContactEnterpriseController@update')->where(['enterprise_id'=>'[0-9]+', 'contact_id'=>'[0-9]+']);
+                Route::put('/enterprises/{enterprise_id}/contacts/{contact_id}/replace-with/{replacement_id}', 'ContactEnterpriseController@replace')->where(['enterprise_id'=>'[0-9]+', 'contact_id'=>'[0-9]+', 'replacement_id'=>'[0-9]+']);
+                Route::put('/enterprises/{enterprise_id}/contacts/{contact_id}/transfer-to/{target_id}', 'ContactEnterpriseController@transfer')->where(['enterprise_id'=>'[0-9]+', 'contact_id'=>'[0-9]+', 'target_id'=>'[0-9]+']);
                 Route::put('/enterprises/{enterprise_id}/contacts/{contact_id}/state', 'ContactEnterpriseController@updateState')->where(['enterprise_id'=>'[0-9]+', 'contact_id'=>'[0-9]+']);
                 Route::delete('/contacts/{id}', 'ContactController@destroy')->where(['contact_id'=>'[0-9]+']);
 
@@ -151,6 +181,28 @@ Route::group([
                 Route::put('/contacts/{contact_id}/interactions/{interaction_id}', 'ContactInteractionController@update')->where(['contact_id'=>'[0-9]+', 'interaction_id'=>'[0-9]+']);
                 Route::delete('/contacts/{contact_id}/interactions/{interaction_id}', 'ContactInteractionController@destroy')->where(['contact_id'=>'[0-9]+', 'interaction_id'=>'[0-9]+']);
 
+                /**
+                 *  Provider CRUD routes
+                 */   
+                Route::post('/providers', 'ProviderController@store');
+                Route::put('/providers/{id}', 'ProviderController@update')->where('id', '[0-9]+');
+                Route::delete('/providers/{id}', 'ProviderController@destroy')->where('id', '[0-9]+');
+                
+                /**
+                 *  Product CRUD routes
+                 */   
+                Route::post('/products', 'ProductController@store');
+                Route::put('/products/{id}', 'ProductController@update')->where('id', '[0-9]+');
+                Route::delete('/products/{id}', 'ProductController@destroy')->where('id', '[0-9]+');
+                
+                /**
+                 *  Sale CRUD routes
+                 */   
+                Route::post('/sales', 'SaleController@store');
+                Route::put('/sales/{id}', 'SaleController@update')->where('id', '[0-9]+');
+                Route::delete('/sales/{id}', 'SaleController@destroy')->where('id', '[0-9]+');
+                
+                
             });
 
             /**

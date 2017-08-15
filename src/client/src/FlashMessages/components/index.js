@@ -43,9 +43,8 @@ class FlashMessages extends Component {
 
     renderMessage(message) {
         return (
-            <div
-                className={`alert alert-${message.type} alert-dismissable `}
-                key={message.id}>
+            <div key={message.id}
+                className={`alert alert-${message.type} alert-dismissable animated flipInX`}>
                 <button
                     type="button"
                     className="close"

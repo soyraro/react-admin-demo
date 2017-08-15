@@ -29,6 +29,8 @@ class ProviderTransformer extends TransformerAbstract
             'address'=> $model->address,
             'zipcode'=> $model->zipcode,
             'phone'=> $model->phone,      
+            'email'=> $model->email,      
+            'web'=> $model->web,      
             'observations'=> $model->observations,
         ];
     }

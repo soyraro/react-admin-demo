@@ -6,7 +6,6 @@ class Actions extends Component {
 
     static propTypes = {
         id: PropTypes.number,
-        onEdit: PropTypes.func.isRequired,
         onDelete: PropTypes.func.isRequired,
     }
 

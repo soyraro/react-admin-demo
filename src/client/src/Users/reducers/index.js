@@ -1,10 +1,18 @@
+const skel = {
+    list: [],
+    roles: []
+}
 
-function users (state = {}, action) {
+function users (state = skel, action) {
 
     switch (action.type) {  
         case 'USER_LIST_SUCCESS':   
             return Object.assign({}, state, {
                 list: action.payload.data
+            });  
+        case 'USER_ROLES_LIST_SUCCESS':   
+            return Object.assign({}, state, {
+                roles: action.payload.list
             });  
         case 'ADD_USER':
             return Object.assign({}, state, {

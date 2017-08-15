@@ -29,7 +29,7 @@ class ContactListTransformer extends TransformerAbstract
             'sector' => $model->sector_id,
             'state' => [
                 'id' => $model->state_id,
-                'key' => $model->state_key,
+                'keyname' => $model->state_key,
                 'name' => $model->state_name
             ]
         ];

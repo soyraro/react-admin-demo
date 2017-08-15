@@ -1,4 +1,5 @@
 import axios from 'axios'
+import _ from 'lodash'
 
 // ------------------------------------
 // Constants
@@ -33,11 +34,45 @@ export function userListSuccess(data) {
     }
 }
 
+export function fetchUserRoles() {
+
+    // fetch data from DB
+    return (dispatch, getState) => { 
+      
+        const shouldFetchList = (_.isEmpty(getState().users.roles)) ? true : false;
+
+        if(shouldFetchList) {
+
+            return axios.get('/users/roles').then(response => { 
+                dispatch({
+                    type: 'USER_ROLES_LIST_SUCCESS',
+                    payload: {
+                        list: response.data
+                    }
+                });
+            }).catch(function (err) {
+                console.log(err);
+            });
+        } else {
+            return Promise.resolve();
+        }
+    }
+}
+
 export function addUser(data) {
    
-    return (dispatch) => {
+    return (dispatch, getState) => {
         
+        // server expects an id
+        data.role = data.role.id;
+
         return axios.post('/users', data).then(response => {
+        
+            data.id = response.user_id; // assign user id
+
+            // this prevent ddl breaks
+            data.role = _.find(getState().users.roles, {id: data.role})
+          
             dispatch({
                 type: 'ADD_USER',
                 payload: {
@@ -50,9 +85,16 @@ export function addUser(data) {
 
 export function saveUser(data) {
 
-    return (dispatch) => {
+    return (dispatch, getState) => {
 
+        // server expects an id
+        data.role = data.role.id;
+      
         return axios.put('/users/'+data.id, data).then(response => {
+            
+            // this prevent ddl breaks
+            data.role = _.find(getState().users.roles, {id: data.role})
+
             dispatch({
                 type: 'SAVE_USER',
                 payload: {

@@ -46,7 +46,10 @@ function contacts (state = skel, action) {
             // replace item in list
             const updatedList = state.list.map(item => {
 
-                if(item.id === action.payload.data.id){
+                const contact_id = action.payload.data.id;
+                const enterprise_id = action.payload.data.enterprise_id; // update the contact only in this enterprise 
+
+                if(item.id === contact_id && item.enterprise === enterprise_id){
                     return { ...item, ...action.payload.data }
                 }
                 return item

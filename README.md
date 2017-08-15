@@ -4,7 +4,7 @@
 
 El proyecto está basado en Laravel 5.4, React-Redux, Bootstrap y el template Metronic.
 
-Corre con PHP 5.6 provisoriamente hasta actualizar servidores de QA y prod. 
+Corre en Docker con PHP 5.6 provisoriamente hasta actualizar servidores de QA y prod. 
 
 ### Metronic
 
@@ -62,7 +62,7 @@ Ese comando no solo genera los `js` y `js.map` sino que también copia la carpet
 
 Resumiendo: no hay que tocar nada directamente en _/public_. Se trabaja en carpeta _/react_
 
-#### hot reloading
+#### Hot reloading
 
 Para trabajar en desarrollo compilamos con: 
 `npm run build:dev`
@@ -82,6 +82,12 @@ Los _scss_ que vienen con el template no los usamos. Esos son obra de la gente d
 En cuando a los *css*, tampoco los tocamos. Trabajamos _exclusivamente_ en:
 
 `assets/custom.css`
+
+## Tests
+
+No hay casi tests escritos en este proyecto. El cliente pidió acelerar los tiempos de desarrollo y fue una de las cosas que tiramos por la borda.  
+
+Desde ya que no contar con tests hace más arduo el mantenimiento del proyecto. Y lo que "se ahorra" en el primer release a producción se irá pagando en cuotas con intereses durante el mantenimiento.
 
 ## Utiles
 

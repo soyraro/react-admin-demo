@@ -23,7 +23,7 @@ class ContactStatesSeeder extends Seeder
         foreach ($states as $key => $state) {
             
             App\ContactState::create(array(
-                'key' => $key,
+                'keyname' => $key,
                 'name' => $state
             ));
         }       

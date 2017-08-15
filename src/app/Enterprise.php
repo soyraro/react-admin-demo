@@ -48,4 +48,9 @@ class Enterprise extends Model
     {
         return $this->hasManyThrough('App\Interaction', 'App\Contact');
     }
+    
+    public function tasks()
+    {
+        return $this->hasMany('App\Task');
+    }
 }

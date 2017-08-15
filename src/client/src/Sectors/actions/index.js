@@ -14,7 +14,7 @@ export const REMOVE_SECTOR = 'REMOVE_SECTOR'
 export function fetchSectorList(enterprise_id = null) {
 
     // empty sector list
-    if(!enterprise_id) { 
+    if(!enterprise_id || isNaN(enterprise_id)) { 
         return (dispatch) => {
             dispatch(sectorListSuccess([]));
             return Promise.resolve();

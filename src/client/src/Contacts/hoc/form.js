@@ -3,34 +3,10 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import ContactsForm from '../components/form'
 import { addContact, saveContact, getEnterpriseContact, contactUnselected, fetchContactStates } from '../actions'
-import { fetchEnterpriseList } from '../../Enterprises/actions'
-import { fetchSectorList } from '../../Sectors/actions'
-import withFlashMessages from '../../FlashMessages/hoc/with-flash-messages'
-
-function mapForDropdownList(list, params) {
-
-    // merge default with params
-    const objectKeys = Object.assign({
-        id: 'id',
-        label: 'name',
-        value: 'id'        
-    }, params)
-
-    return Object.values(list).map((item)=>{
-
-        const data = {
-            id: item[objectKeys.id],
-            label: item[objectKeys.label],
-            value: item[objectKeys.value]
-        }
-
-        if(typeof objectKeys.extra != 'undefined') {
-            data[objectKeys.extra] = item[objectKeys.extra]; // arbitrary data
-        }
-            
-        return data;
-    })
-}
+import { fetchEnterpriseList } from 'Enterprises/actions'
+import { fetchSectorList } from 'Sectors/actions'
+import withFlashMessages from 'FlashMessages/hoc/with-flash-messages'
+import { mapForDropdownList } from 'Commons/utils/dropdownlists'
 
 const mapStateToProps = (store, ownProps) => {  
     

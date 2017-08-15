@@ -49,9 +49,7 @@ export function getProduct(id) {
 
         return axios.get('/products/'+id).then(response => { 
             dispatch(productSelected(response.data.data));
-        }).catch(function (err) {
-            console.log(err);
-        });
+        })
     }
 }
 
@@ -80,30 +78,71 @@ export function productUnselected() {
 }
 
 export function addProduct(data) {
-    return {
-        type: 'ADD_PRODUCT',
-        payload: {
-            data
+
+    // persist data in DB
+    return (dispatch) => { 
+
+        const params = {
+            ...data,
+            provider: data.provider.id,
+            family: data.family.id,
+            group: data.group.id,
+            currency: data.currency.id
         }
-    };
+
+        return axios.post('/products', params).then(response => { 
+
+            // set id
+            data.id = response.data.enterprise_id;
+
+            dispatch({
+                type: 'ADD_PRODUCT',
+                payload: {
+                    data
+                }
+            });
+        })
+    }
 }
 
 export function saveProduct(data) { 
-    return {
-        type: 'SAVE_PRODUCT',
-        payload: {
-            data
+
+    // persist data in DB
+    return (dispatch) => { 
+
+        const params = {
+            ...data,
+            provider: data.provider.id,
+            family: data.family.id,
+            group: data.group.id,
+            currency: data.currency.id
         }
-    };
+
+        return axios.put('/products/' + data.id, params).then(response => { 
+            dispatch({
+                type: 'SAVE_PRODUCT',
+                payload: {
+                    data
+                }
+            });
+        })
+    }
 }
 
 export function removeProduct(id) {
-    return {
-        type: 'REMOVE_PRODUCT',
-        payload: {
-            id
-        }
-    };
+
+    // remove data from DB
+    return (dispatch) => { 
+
+        return axios.delete('/products/' + id).then(response => { 
+            dispatch({
+                type: 'REMOVE_PRODUCT',
+                payload: {
+                    id
+                }
+            });
+        })
+    }
 }
 
 

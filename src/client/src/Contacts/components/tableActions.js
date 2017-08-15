@@ -6,9 +6,8 @@ class Actions extends Component {
 
     static propTypes = {
         enterprise_id: PropTypes.number,
-        contact_id: PropTypes.number,
-        onWithdraw: PropTypes.func.isRequired,
-        onDelete: PropTypes.func.isRequired,
+        contact_id: PropTypes.number,      
+        onDelete: PropTypes.func.isRequired
     }
 
     /**
@@ -20,20 +19,7 @@ class Actions extends Component {
 
     render() {
         return (
-            <div className="actions">
-                <button className="btn btn-circle btn-icon-only btn-default"
-                    title="Reemplazar">
-                        <i className="fa fa-user-secret"></i>
-                </button>
-                <button className="btn btn-circle btn-icon-only btn-default"
-                    title="Trasladar">
-                    <i className="glyphicon glyphicon-globe "></i>
-                </button>
-                <button className="btn btn-circle btn-icon-only btn-default"
-                    onClick={_=>{this.props.onWithdraw(this.props.enterprise_id, this.props.contact_id)}}
-                    title="Baja" >
-                    <i className="fa fa-user-times"></i>
-                </button>
+            <div className="actions">             
                 <Link className="btn btn-circle btn-icon-only btn-default"
                     title="Interacciones"
                     to={"/empresas/"+ this.props.enterprise_id +"/contactos/"+ this.props.contact_id +"/interacciones"}>

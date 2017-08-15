@@ -3,19 +3,19 @@ import {REMOVE_FLASH_MESSAGE} from '../actions';
 import {VIEWED_FLASH_MESSAGE} from '../actions';
 import {CLEANUP_FLASH_MESSAGES} from '../actions';
 
-export default(state = [], action) => {
+export default (state = [], action) => {
     switch (action.type) {
         case FLASH_MESSAGE:
-            return [...state, action.payload];
+            return state.concat(action.payload.message);
         case REMOVE_FLASH_MESSAGE:
-            return state.filter( item  => { return item.id !== action.payload.id });
+            return state.filter(item  => { return item.id !== action.payload.id });
         case VIEWED_FLASH_MESSAGE:
             return state.map( item => {
                 if(item.id !== action.payload.id) {
                     return state
                 }
                 return {
-                    ... item,
+                    ...item,
                     viewed: true
                 }
             });

@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
-import Select from 'react-select'
+import queryString from 'query-string'
 import View from './form.view'
 
 class Form extends Component {
@@ -10,7 +10,7 @@ class Form extends Component {
      * Pre-declaring nested fields
      */
     static defaultProps = {
-        data: {
+        data: {          
             'id': '',
             'legal_name': '',
             'cuit': '',
@@ -45,7 +45,9 @@ class Form extends Component {
         onAddEnterprise: PropTypes.func.isRequired,
         onSaveEnterprise: PropTypes.func.isRequired,
         unselectEnterprise: PropTypes.func.isRequired,
-        history: PropTypes.object.isRequired
+        history: PropTypes.object.isRequired,  
+        flashSuccess: PropTypes.func.isRequired,  
+        flashError: PropTypes.func.isRequired
     }
 
     constructor(props) {
@@ -56,13 +58,12 @@ class Form extends Component {
             isEdition: props.match.params.id ? true : false     
         });
       
-        if(!this.state.isEdition) {
-            // re assure we are creating from scratch
-            this.props.unselectEnterprise();
-        }
-
         // events
         this.handleCountryChange = this.handleCountryChange.bind(this);
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.handleQuillChange = this.handleQuillChange.bind(this);
+        this.handleOptionChange = this.handleOptionChange.bind(this);
+        this.handleNestedValueChange = this.handleNestedValueChange.bind(this);
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
     }
@@ -79,18 +80,21 @@ class Form extends Component {
             this.props.getEnterprise(this.props.match.params.id).then(_=>{
                 this.fetchData();
             });
-        }  else {            
+        }  else {       
+            this.clear();
             this.fetchData();
         }  
     }
 
     fetchData() {
          
+        const self = this;
+
         // fetch country/provinces list
         this.props.getCountries().then(()=> {
             // set predefined country
-            const country = (this.state.isEdition) ? this.state.data.country : this.props.countries[1];
-            this.handleCountryChange(country, this.state.data.province);
+            const country = (self.state.isEdition) ? self.state.data.country : self.props.countries[1];
+            self.handleCountryChange(country, self.state.data.province);
         });
     }
 
@@ -101,9 +105,18 @@ class Form extends Component {
      */
     componentWillReceiveProps(nextProps) {
 
-        this.setState({
-            data: nextProps.data,
-        });
+        const data = {
+            ...Form.defaultProps.data,
+            ...nextProps.data
+        }
+       
+        let newState = {
+            data,
+            countries: nextProps.countries,
+            provinces: nextProps.provinces
+        };  
+
+        this.setState(newState);
     }
 
     handleCountryChange(country, province = this.props.provinces[1]) {
@@ -114,7 +127,7 @@ class Form extends Component {
 
             // set predefined province
             self.setState({
-                data: Object.assign({}, this.state.data, {
+                data: Object.assign({}, self.state.data, {
                     country,
                     province
                 })
@@ -122,29 +135,101 @@ class Form extends Component {
         })
     }
 
+    /**
+     * Handle form interactions
+     * @param {*} event 
+     */
+    handleInputChange(event) {
+
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+
+        const data = Object.assign({}, this.state.data, {
+            [name]: value
+        })
+
+        this.setState({ data });
+    }
+
+    /**
+     * Handle Quill wysiwyg
+     * @param {*} event 
+     */
+    handleQuillChange(field, value) {
+
+        const data = Object.assign({}, this.state.data, {
+            [field]: value
+        })
+
+        this.setState({ data });
+    }
+
+    /**
+     * Handle dropdowns changes 
+     * @param {*} field name
+     * @param {*} value 
+     */
+    handleOptionChange(field, value) {
+
+        const data = Object.assign({}, this.state.data, {
+            [field]: value
+        })
+
+        this.setState({ data });
+    }
+
+    /**
+     * Handle form nested values
+     * @param {*} event 
+     */
+    handleNestedValueChange(parent, field, event) {
+
+        const value = event.target.value;
+      
+        const data = Object.assign({}, this.state.data, {
+            [parent]: Object.assign({}, this.state.data[parent], {
+                [field]: value
+            })
+        })
+
+        this.setState({ data });
+    }
+
     save(data) {
+
+         // will redirect to filtered list after saving
+        const redirection = {
+            pathname: '/empresas',
+            search: queryString.stringify({
+                country_id: data.country,
+                client_type: data.client_type
+            })
+        }     
+
+        const self = this;
    
         if(!data.id) {
             this.props.onAddEnterprise(data).then(_=>{
-                this.props.flashSuccess({
+                self.props.flashSuccess({
                     text: "Se ha guardado la empresa"
-                })
-                this.clear();
-                this.backToList();
+                });
+                self.clear();
+                self.props.history.push(redirection);
             }).catch(_=>{
-                this.props.flashError({
+                self.props.flashError({
                     text: "Hubo un error al guardar los datos"
                 })
             });  
         } else {
-            this.props.onSaveEnterprise(data).then(err=>{
-                this.props.flashSuccess({
+            this.props.onSaveEnterprise(data).then(_=>{
+                self.props.flashSuccess({
                     text: "Se ha guardado los datos"
-                })
-                this.clear();
-                this.backToList();
+                });
+                self.clear();
+                self.props.history.push(redirection);
             }).catch(_=>{
-                this.props.flashError({
+                self.props.flashError({
                     text: "Hubo un error al guardar los datos"
                 })
             });    
@@ -173,6 +258,10 @@ class Form extends Component {
                 countries={this.props.countries}
                 provinces={this.props.provinces}
                 handleCountryChange={this.handleCountryChange}
+                handleInputChange={this.handleInputChange}
+                handleQuillChange={this.handleQuillChange}
+                handleOptionChange={this.handleOptionChange}
+                handleNestedValueChange={this.handleNestedValueChange}
                 save={this.save}
                 cancel={this.cancel}
             /> 

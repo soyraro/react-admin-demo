@@ -19,17 +19,17 @@ class Actions extends Component {
     render() {
         return (
             <div className="actions">
-                <Link className="btn btn-circle btn-icon-only btn-default"
+                <Link className="btn btn-circle btn-icon-only yellow-crusta btn-default"
                     title="Sectores"
                     to={"/empresas/"+ this.props.id +"/sectores"}>
                         <i className="fa fa-users"></i>
                 </Link>
-                <Link className="btn btn-circle btn-icon-only btn-default"
+                <Link className="btn btn-circle btn-icon-only blue btn-default"
                     title="Contactos"
-                    to={"/empresas/contactos?enterprise_id="+this.props.id}>
+                    to={"/empresas/contactos?enterprise_id="+this.props.id+"&state_id=1"}>
                     <i className="fa fa-user"></i>
                 </Link>
-                <Link className="btn btn-circle btn-icon-only btn-default"
+                <Link className="btn btn-circle btn-icon-only grey-gallery btn-default"
                     title="Interacciones"
                     to={"/empresas/"+ this.props.id +"/interacciones"}>
                     <i className="fa fa-commenting"></i>

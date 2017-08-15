@@ -142,7 +142,7 @@ class Form extends Component {
 
                         <div className="col-xs-12 col-sm-6">
                             <div className="caption font-red-sunglo">
-                                <i className="icon-settings font-red-sunglo"></i>
+                                <i className="fa fa-circles font-red-sunglo"></i>
                                 <span className="caption-subject bold uppercase">
                                     
                                    { this.state.isEdition ? ' Edición' : ' Nuevo contacto' }</span>

@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import config from '../../config/app.js'
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table'
 import Actions from './tableActions'
 import swal from 'sweetalert2'
 import List from './list'
@@ -11,7 +10,9 @@ import Form from './form'
 class SectorsPage extends Component {
 
     static propTypes = {
+        enterprise: PropTypes.object.isRequired,
         fetchSectorList: PropTypes.func.isRequired,
+        getEnterprise: PropTypes.func.isRequired,
         onAddSector: PropTypes.func.isRequired,
         onSaveSector: PropTypes.func.isRequired,
         onRemoveSector: PropTypes.func.isRequired
@@ -31,9 +32,14 @@ class SectorsPage extends Component {
         this.onSaveSector = this.onSaveSector.bind(this);
         this.onDeleteClicked = this.onDeleteClicked.bind(this);
         this.onCancel = this.onCancel.bind(this);
+    }
+
+    componentDidMount() {
 
         // fetch data
-        this.props.fetchSectorList(this.state.enterprise_id);      
+        this.props.fetchSectorList(this.state.enterprise_id);  
+
+        this.props.getEnterprise(this.state.enterprise_id);
     }
 
     /**
@@ -122,6 +128,7 @@ class SectorsPage extends Component {
                 <div className="col-md-6">
                     <List 
                         sectors={this.props.sectors}
+                        enterprise={this.props.enterprise}
                         enterprise_id={this.props.match.params.id}
                         onEditClicked={this.onEditClicked}
                         onDeleteClicked={this.onDeleteClicked}

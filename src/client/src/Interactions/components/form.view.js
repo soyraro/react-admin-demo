@@ -1,13 +1,13 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-import FlashMessages from '../../FlashMessages'
+import FlashMessages from 'FlashMessages'
 import Select from 'react-select'
 import ReactQuill from 'react-quill'
+import config from 'Config/app.js'
 import DayPickerInput from 'react-day-picker/DayPickerInput'
 import LocaleUtils from 'react-day-picker/moment'
 import moment from 'moment'
 import 'moment/locale/es'
-import 'react-day-picker/lib/style.css'
 
 class Form extends Component {
 
@@ -35,7 +35,7 @@ class Form extends Component {
 
     componentWillReceiveProps(newProps) { 
 
-        const date = newProps.data.date ?  moment(newProps.data.date, 'DD-MM-YYYY') : undefined;
+        const date = newProps.data.date ?  moment(newProps.data.date, config.dates.visual_format) : undefined;
         this.setState({
             ...newProps.data,
             date
@@ -46,7 +46,7 @@ class Form extends Component {
 
         const data = {
             ...this.state,
-            date: moment(this.state.date).format("YYYY-MM-DD"),
+            date: moment(this.state.date).format(config.dates.visual_format),
             contact: this.state.contact
         };       
       
@@ -61,12 +61,7 @@ class Form extends Component {
 
         const data = this.state;
       
-        const dayPickerProps = {
-            todayButton: 'Hoy',
-            locale: "es",
-            localeUtils: LocaleUtils,
-            enableOutsideDays: true,
-        };
+        const dayPickerProps = config.dates.dayPickerProps;
 
         return (
 
@@ -80,7 +75,7 @@ class Form extends Component {
                     <div className="row">
                         <div className="col-xs-12 col-sm-6">
                             <div className="caption font-red-sunglo">
-                                <i className="icon-settings font-red-sunglo"></i>
+                                <i className="fa fa-circles font-red-sunglo"></i>
                                 <span className="caption-subject bold uppercase">
                                     { this.props.data.id ? ' Edición' : ' Nueva interacción' }</span>
                             </div>      
@@ -105,8 +100,8 @@ class Form extends Component {
                                         <DayPickerInput
                                             name="date"                                            
                                             placeholder="dd/mm/yyyy"
-                                            format="DD/MM/YYYY"
-                                            value={moment(this.state.date).format("DD/MM/YYYY") || ''}
+                                            format={config.dates.visual_format}
+                                            value={moment(this.state.date).format(config.dates.visual_format) || ''}
                                             onDayChange={this.props.handleDateChange}
                                             dayPickerProps={dayPickerProps}
                                             />
@@ -132,7 +127,7 @@ class Form extends Component {
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-8">
+                                <div className="col-md-12 col-lg-8">
                                     <div className="form-group">
                                         <label>Descripción</label>
                                         <ReactQuill className="form-control" 

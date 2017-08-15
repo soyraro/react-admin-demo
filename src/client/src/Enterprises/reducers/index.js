@@ -15,7 +15,7 @@ function enterprises (state = {}, action) {
             }); 
         case 'ADD_ENTERPRISE':
 
-            /* In case user reload form page and there's no cache for the list */
+            /* In case user reload form page and there's no cache for the list to insert this item */
             if(typeof state.list === 'undefined') 
                 return state;
 
@@ -24,7 +24,7 @@ function enterprises (state = {}, action) {
             });
         case 'SAVE_ENTERPRISE':
 
-            /* In case user reload form page and there's no cache for the list */
+            /* In case user reload form page and there's no cache for the list, so it cannot be updated */
             if(typeof state.list === 'undefined') 
                 return state;
 

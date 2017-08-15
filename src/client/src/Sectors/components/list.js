@@ -41,9 +41,6 @@ class List extends Component {
             ],
             selected: {}
         }   
-
-        // search on every field
-        this.state.searchableProperties = _(this.state.columns).map('field').value();  
     }
 
     /**
@@ -87,7 +84,7 @@ class List extends Component {
     }
   
     render() {
-     
+    
         return (
             
             <div className="portlet light bordered">
@@ -97,6 +94,7 @@ class List extends Component {
                             <div className="caption">
                                 <i className="icon-social-dribbble font-dark hide"></i>
                                 <span className="caption-subject font-dark bold uppercase">Sectores</span>
+                                <h4>{ this.props.enterprise.legal_name }</h4>
                             </div>
                         </div>
                     </div>
@@ -122,6 +120,7 @@ class List extends Component {
                                         dataAlign={col.dataAlign}
                                         dataSort={col.sort}
                                         dataFormat={col.formatter}
+                                        filterFormatted={!_.isNil(col.formatter)}
                                         >{col.title}</TableHeaderColumn>
                                 })
                             }

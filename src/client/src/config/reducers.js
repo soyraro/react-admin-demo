@@ -9,23 +9,29 @@ import families from '../Commons/reducers/families'
 import sectors from '../Sectors/reducers'
 import contacts from '../Contacts/reducers'
 import interactions from '../Interactions/reducers'
+import currencies from '../Commons/reducers/currencies'
+import tasks from '../Tasks/reducers'
+import sales from '../Sales/reducers'
 import flashMessages from '../FlashMessages/reducers';
 
 /**
  * Combine reducers
  */
 export default combineReducers({
-  session,
-  users,
-  countries,
-  enterprises,
-  providers,
-  products,
-  families,
-  sectors,
   contacts,
+  countries,
+  currencies,
+  enterprises,
+  families,
+  flashMessages,
   interactions,
-  flashMessages
+  products,
+  providers,
+  sales,
+  sectors,
+  session,
+  tasks,
+  users
 })
 
 /**
@@ -37,16 +43,16 @@ export default combineReducers({
 let storeTree = {
   profile: {},
   users: {
-    list: [{}, {}],
+    list: [],
     selected: ''
   },
   countries: {
     list: [{
       // ...data,
-      provinces: [{}, {}]
+      provinces: []
     }, {
       // ...data,
-      provinces: [{}, {}]
+      provinces: []
     }],
     selected: ''
   },
@@ -55,28 +61,36 @@ let storeTree = {
       { country: '' },
       { type: '' },
     ],
-    list: [{}, {}],
+    list: [],
     selected: '',
     sectors: {
-      list: [{}, {}],
+      list: [],
       selected: ''
     },
+    contacts: {
+      list: [],
+      selected: {},
+      interactions: {
+        list: [],
+        selected: {}
+      }
+    }
   },
   providers: {
-    list: [{}, {}],
+    list: [],
     selected: ''
   },
   products: {
-    list: [{}, {}],
+    list: [],
     selected: ''
   },  
   families: {
     list: [{
       // ...data,
-      groups: [{}, {}]
+      groups: []
     }, {
       // ...data,
-      groups: [{}, {}]
+      groups: []
     }],
     selected: ''    
   }

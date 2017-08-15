@@ -1,23 +1,27 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
-import { Link } from 'react-router-dom'
-import FlashMessages from '../../FlashMessages'
-import Select from 'react-select'
+import View from './form.view'
 import _ from 'lodash'
 
 class Form extends Component {
 
     static defaultProps = {
         data: {
+            name: '',
+            code: '',
+            type: {},
             provider: {},
             family: {},
-            group: {}
+            group: {},
+            currency: {},
+            price: ''
         }
     };
 
     static PropsType = {
         data: PropTypes.array,
+        types: PropTypes.array.isRequired,
         providers: PropTypes.array.isRequired,
         families: PropTypes.array.isRequired,
         groups: PropTypes.array.isRequired,
@@ -25,22 +29,27 @@ class Form extends Component {
         getProviders: PropTypes.func.isRequired,
         getFamilies: PropTypes.func.isRequired,
         getGroups: PropTypes.func.isRequired,
+        unselectProduct: PropTypes.func.isRequired,
         onSaveProduct: PropTypes.func.isRequired,
         onCancel: PropTypes.func.isRequired,        
-        history: PropTypes.object.isRequired
+        history: PropTypes.object.isRequired,  
+        flashSuccess: PropTypes.func.isRequired,  
+        flashError: PropTypes.func.isRequired
     }
 
     constructor(props = {}) {
 
         super(props)
 
-        this.state = Object.assign({}, props, {
-            isEdition: props.match.params.id ? true : false     
+        this.state = Object.assign({}, Form.defaultProps, props, {
+            isEdition: props.match.params.id ? true : false,
+            dataLoaded: false     
         });
-
+       
         // events
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleOptionChange = this.handleOptionChange.bind(this);
+        this.handleFamilyChange = this.handleFamilyChange.bind(this);
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
     }
@@ -52,7 +61,7 @@ class Form extends Component {
 
         // fetch data under edition
         if(this.state.isEdition) {
-            this.props.getProduct(this.props.match.params.id).then(_=>{
+            this.props.getProduct(this.props.match.params.id).then(_=>{                
                 this.fetchData();
             });
         } else {
@@ -63,19 +72,49 @@ class Form extends Component {
     fetchData() {
 
         const self = this;
+        
+        const lodash = _;
 
         // fulfill dropdowns
         this.props.getProviders().then(_=>{ 
             // apply predefined item
-            const provider = (self.state.isEdition && self.state.data) ? self.state.data.provider : self.props.providers[1];
+            const provider = (self.state.isEdition && self.state.data.provider) ? self.state.data.provider : self.props.providers[0];
             self.setState({ data: Object.assign(self.state.data, { provider })});
-        });     
+        })
+        .then(_=>{
+            return this.props.getFamilies().then(()=>{ 
+                // apply predefined item
+                const family = (self.state.isEdition && self.state.data.family) ? self.state.data.family : self.props.families[0];
+                return self.handleFamilyChange(family, self.state.data.group);
+            });
+        })     
+        .then(_=>{
+            return this.props.getCurrencies().then(()=>{ 
+                // apply predefined item
+                const currency = (self.state.isEdition && self.state.data.currency) ? self.state.data.currency : self.props.currencies[0];
+                self.setState({ data: Object.assign(self.state.data, { currency })});
+            });
+        })
+        .then(_=>{
 
-        this.props.getFamilies().then(()=>{ 
-            // apply predefined item
-            const family = (self.state.isEdition && self.state.data) ? self.state.data.family : self.props.families[1];
-            self.handleFamilyChange(family, self.state.data.group);
-        });
+            // fulfill default type
+            let type = self.props.types[0];
+
+            if(self.state.isEdition) {
+                let keyname;
+                if(typeof self.state.data.type === 'string') {
+                    keyname = self.state.data.type;
+                } else {
+                    keyname = self.state.data.type.value;
+                }
+                type = lodash.find(self.props.types, {value: keyname}) 
+            }
+           
+            self.setState({ data: Object.assign(self.state.data, { type })},_=>{
+                // flag
+                self.setState({dataLoaded: true});  
+            });
+        });        
     }
 
     /**
@@ -84,14 +123,47 @@ class Form extends Component {
      * @param {obj} nextProps 
      */
     componentWillReceiveProps(nextProps) {
-
-        let newState = {
-            data: nextProps.data,
+        
+        let newState = {    
+            types: nextProps.types,
             providers: nextProps.providers,
             families: nextProps.families,
-            groups: nextProps.groups
-        };       
+            groups: nextProps.groups,
+            currencies: nextProps.currencies
+        };      
+        
+        /**
+         * Handle current data vs props refresh
+         * This is neccesary because of the group ddl, that changes dynamically
+         */
+        if(!this.state.isEdition) {
+            // fresh form
+            if(this.state.dataLoaded) {
+                newState.data = {
+                    ...nextProps.data,
+                    ...this.state.data
+                } 
+            } else {
+                newState.data = {
+                    ...Form.defaultProps.data,
+                    ...nextProps.data
+                }
+            }
+        } else {
 
+            if(this.state.dataLoaded) {
+                // fresh form under edition
+                newState.data = {
+                    ...nextProps.data,
+                    ...this.state.data
+                } 
+            } else {
+                newState.data = {
+                    ...nextProps.data
+                } 
+            }
+        }
+      
         this.setState(newState);
     }
 
@@ -129,7 +201,7 @@ class Form extends Component {
     handleFamilyChange(family, group = this.props.groups[1]) {
 
         const self = this;
-        this.props.getGroups(family.id).then(_=> {
+        return this.props.getGroups(family.id).then(_=> {
 
             // set predefined group
             self.setState({ data: Object.assign(this.state.data, {
@@ -139,181 +211,72 @@ class Form extends Component {
         })
     }
 
-    save() {
-        const data = this.state.data;        
-        this.props.onSaveProduct(data);  
+    save(data) {
+
+        const self = this;
+      
+        if(!data.id) {
+            this.props.onAddProduct(data).then(_=>{
+                self.props.flashSuccess({
+                    text: "Se ha guardado los datos"
+                });
+                self.clear();
+                self.backToList();
+            }).catch(err=>{
+                self.props.flashError({
+                    text: "Hubo un error al guardar los datos"
+                })
+            });  
+        } else {
+            this.props.onSaveProduct(data).then(_=>{
+                self.props.flashSuccess({
+                    text: "Se ha guardado los datos"
+                });
+                self.clear();
+                self.backToList();
+            }).catch(err=>{
+                console.log(err);
+                self.props.flashError({
+                    text: "Hubo un error al guardar los datos"
+                })
+            });    
+        }      
     }
 
     cancel() {
-        this.props.unselectProduct();  
+        this.clear();
+        this.backToList();
+    }
+
+    clear() {
+        this.setState({ data: Form.defaultProps.data }); // reset state
+        this.props.unselectProduct(); // redux action
+    }
+
+    backToList() {
+        this.clear();
+        this.props.history.goBack(); // redirect
     }
 
     render() {
-     
+        
         return (
 
-            <div className="portlet light bordered">
-                <div className="portlet-title">
-                    <div className="row">
-                        <div className="col-xs-12 col-sm-6">
-                            <div className="caption font-red-sunglo">
-                                <span className="icon-settings font-red-sunglo"></span>
-                                <span className="caption-subject bold uppercase">
-                                    { this.props.data.id ? ' Edición' : ' Alta producto' }</span>
-                            </div>     
-                        </div>
-
-                        <div className="col-xs-12 col-sm-6">
-                            <Link to='/productos' className="btn green pull-right">
-                                <span className="fa fa-arrow-left" /> Volver
-                            </Link>
-                        </div>
-                    </div>                
-                </div>
-                <div className="portlet-body form">
-                    <form role="form">
-                        <div className="form-body">
-                            <div className="messages">
-                                <FlashMessages />
-                            </div>
-                            <div className="row">
-                                <div className="col-xs-12 col-sm-2">
-                                    <div className="form-group">
-                                        <label>Tipo</label>
-                                        <select className="form-control" name="type">
-                                            <option value="producto">Producto</option>
-                                            <option value="repuesto">Repuesto</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="col-xs-12 col-md-2">
-                                    <div className="form-group">
-                                        <label htmlFor="code">Código</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="code"     
-                                                className="form-control"
-                                                placeholder="Código"
-                                                value={this.state.data.code}
-                                                />
-                                            <span className="input-group-addon">
-                                                <span className="icon-tag"></span>
-                                            </span>
-                                        </div>
-                                    </div>             
-                                </div>
-                                <div className="col-xs-12 col-md-4">
-                                    <div className="form-group">
-                                        <label htmlFor="name">Nombre</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="name"     
-                                                className="form-control"
-                                                placeholder="Nombre"
-                                                value={this.state.data.name}
-                                                />
-                                            <span className="input-group-addon">
-                                                <span className="icon-tag"></span>
-                                            </span>
-                                        </div>
-                                    </div>             
-                                </div>
-                                <div className="col-xs-12 col-md-4"></div>
-                            </div>
-
-                             <div className="row">                     
-                                <div className="col-xs-12 col-md-4">
-                                    <div className="form-group">
-                                        <label>Proveedor</label>
-                                        { this.props.providers.length > 0 && this.state.data && this.state.data.provider &&                                         
-                                            <Select
-                                                name="provider"
-                                                placeholder="Seleccione..."
-                                                value={this.state.data.provider.id}
-                                                options={this.props.providers}
-                                                onChange={obj=>{this.handleOptionChange("provider", obj)}}
-                                                />
-                                        }
-                                    </div>         
-                                </div>
-
-                                <div className="col-xs-12 col-md-3">
-                                    <div className="form-group">
-                                        <label>Familia</label>
-                                        { this.props.families.length > 0 && this.state.data && this.state.data.family &&    
-                                            <Select
-                                                name="family"
-                                                placeholder="Seleccione..."
-                                                value={this.state.data.family.id}
-                                                options={this.props.families}
-                                                onChange={obj=>{this.handleFamilyChange(obj)}}
-                                                />
-                                        }
-                                    </div>         
-                                </div>
-
-                                <div className="col-xs-12 col-md-3">
-                                    <div className="form-group">
-                                        <label>Grupo</label>
-                                        { this.props.groups.length > 0 && this.state.data && this.state.data.group &&    
-                                            <Select
-                                                name="group"
-                                                placeholder="Seleccione..."
-                                                noResultsText="Sin resultados"
-                                                value={this.state.data.group.id}
-                                                options={this.props.groups}
-                                                onChange={obj=>{this.handleOptionChange("group", obj)}}
-                                                />
-                                        }
-                                    </div>         
-                                </div>
-                                
-                                <div className="col-xs-12 col-md-2"></div>
-                            </div>
-
-                            <div className="row">                     
-                                <div className="col-xs-4 col-md-1">
-                                    <div className="form-group">
-                                        <label>Moneda</label>
-                                        <select className="form-control" name="type">
-                                            <option value="ars">AR$</option>
-                                            <option value="usd">U$D</option>
-                                        </select>
-                                    </div>         
-                                </div>
-                                <div className="col-xs-8 col-md-2">
-                                    <div className="form-group">
-                                        <label htmlFor="price">Precio</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="price"     
-                                                className="form-control"
-                                                placeholder="Precio"
-                                                value={this.state.data.price}
-                                                />
-                                            <span className="input-group-addon">
-                                                <span className="fa fa-usd"></span>
-                                            </span>
-                                        </div>
-                                    </div>             
-                                </div>
-                                <div className="col-xs-12 col-md-9"></div>
-                            </div>         
-
-                            <input type="hidden" name="id" value={this.props.data.id} />                         
-                        </div>
-                        <div className="form-actions">
-                            <button type="button" className="btn blue" onClick={this.save}>Guardar</button>
-                            <button type="button" className="btn default" onClick={this.cancel}>Cancelar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            <View data={this.state.data} 
+                isEdition={this.state.isEdition}
+                types={this.props.types}
+                providers={this.props.providers}
+                families={this.props.families}
+                groups={this.props.groups}
+                currencies={this.props.currencies}
+                handleInputChange={this.handleInputChange}
+                handleOptionChange ={this.handleOptionChange}
+                handleFamilyChange ={this.handleFamilyChange}
+                save={this.save}
+                cancel={this.cancel}
+            /> 
         );
     }
 }
 
-export default Form
+export default withRouter(Form)

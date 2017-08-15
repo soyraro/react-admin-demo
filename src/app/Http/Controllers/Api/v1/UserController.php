@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Transformers\UserTransformer;
 use App\User;
+use App\Role;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -25,7 +26,10 @@ class UserController extends Controller
        
         try {
 
-            $data = User::all();
+            $data = User::with('roles')
+                ->orderBy('fullname', 'asc')
+                ->latest()
+                ->get();
             
             $response = fractal()
                 ->collection($data)
@@ -38,6 +42,24 @@ class UserController extends Controller
         }
 
         return $response;
+    }
+    
+    /**
+     * GET /users/roles
+     * 
+     * Retrieves the list of user roles
+     * 
+     * @return json
+     */
+    public function roles()
+    {
+        try {
+            $data = Role::all();
+        } catch (Exception $exc) {
+            return response()->json([ 'message' => 'There was an error retrieving the user roles' ], 500);
+        }
+
+        return $data;
     }
     
     /**
@@ -79,7 +101,7 @@ class UserController extends Controller
 
         try {
 
-            $user = User::findOrFail($user_id);
+            $user = User::with('roles')->findOrFail($user_id);
 
             // decouple DB columns from API response fields
             $response = FractalFacade::item($user, $transformer)->toArray();
@@ -89,7 +111,7 @@ class UserController extends Controller
 
         return response()->json($response);
     }
-
+    
     /**
      * POST /users
      * 
@@ -102,6 +124,7 @@ class UserController extends Controller
         $this->validate($request, [
             'fullname' => 'required|max:30',
             'username' => 'required|max:20',
+            'role' => 'required|integer',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed'
         ]);
@@ -114,6 +137,9 @@ class UserController extends Controller
         $user->image = config('app.default_avatar'); // we set default image at this instance
         $user->save();
 
+        $role = intval($request->input('role'));
+        $user->roles()->attach( $role );
+        
         return response()->json([
                 'user_id' => $user->id,
                 'created_at' => $user->created_at
@@ -137,25 +163,37 @@ class UserController extends Controller
             }
 
             $this->validate($request, [
-                'fullname' => 'sometimes|required|max:255',
-                'username' => 'sometimes|required|max:255',
-                'email' => 'sometimes|required|email',
+                'fullname' => 'required|max:255',
+                'username' => 'required|max:255',
+                'role' => 'required|integer',
+                'email' => 'required|email|unique:users,email,'.$user_id,
                 'password' => 'sometimes|required|min:8|confirmed'
             ]);
+            
+            $role = intval($request->input('role'));
 
             // retrieve record
             $user = User::findOrFail($user_id);
-
+            
             // sanitize name
             $input['fullname'] = filter_var($request->input('fullname'), FILTER_SANITIZE_STRING);
             $input['username'] = filter_var($request->input('username'), FILTER_SANITIZE_STRING);
             $input['email'] = filter_var($request->input('email'), FILTER_SANITIZE_STRING);
-            $input['password'] = Hash::make($request->input('password'));
+            
+            // store optional password
+            $password = $request->input('password');
+            if(!empty($password)) {
+                $input['password'] = Hash::make($password);
+            }
             $request->replace($input);
 
             // fill method assures only expected fields will be stored
             $user->fill($request->all());
             $user->save();
+            
+            // update role
+            $user->roles()->sync( $role );
+            
         } catch (ModelNotFoundException $ex) {
             return response()->json(['error' => 'User not found.'], 404);
         }

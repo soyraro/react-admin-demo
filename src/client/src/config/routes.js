@@ -17,8 +17,13 @@ import ProviderForm from '../Providers/hoc/form'
 import Products from '../Products/hoc'
 import ProductForm from '../Products/hoc/form'
 
-import Sale from '../Sales/hoc'
+import Sales from '../Sales/hoc'
+import SalesForm from '../Sales/hoc/form'
+
 import Users from '../Users/hoc'
+import Tasks from '../Tasks/hoc'
+import TasksForm from '../Tasks/hoc/form'
+import TaskDetails from '../Tasks/hoc/detail'
 
 import WorkInProgress from '../Layout/components/WorkInProgress'
 import Logout from '../Session/hoc/Logout'
@@ -55,11 +60,18 @@ const Routes = (
         <Route exact path="/productos/alta" component={ProductForm} />
         <Route path="/productos/:id/edicion" component={ProductForm} />
 
-        <Route exact path="/ventas" component={WorkInProgress} />
+        <Route exact path="/ventas" component={Sales} />
+        <Route exact path="/ventas/alta" component={SalesForm} />
+        <Route exact path="/ventas/:id/edicion" component={SalesForm} />
 
         <Route exact path="/usuarios" component={Users} />
 
-        <Route exact path="/tareas" component={WorkInProgress} />
+        <Route exact path="/tareas" component={Tasks} />
+        <Route exact path="/tareas/alta" component={TasksForm} />
+        <Route exact path="/tareas/:id/edicion" component={TasksForm} />
+        <Route exact path="/tareas/:id/detalle" component={TaskDetails} />
+
+        <Route exact path="/numeracion" component={WorkInProgress} />
     </Switch>    
 )
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Contact;
+use App\ContactState;
 use App\Http\Controllers\Controller;
 use App\Transformers\ContactListTransformer;
 use App\Transformers\ContactTransformer;
@@ -26,10 +27,11 @@ class ContactEnterpriseController extends Controller
        
         try {
           
+            $client_type = filter_var($request->input('client_type'), FILTER_SANITIZE_STRING);
             $enterprise_id = (int) $request->input('enterprise_id');
             $sector_id = (int) $request->input('sector_id');
             $state_id = (int) $request->input('state_id');
-            
+      
             $data = Contact::with(['emails'])
                 ->select(
                     'contacts.id', 
@@ -44,8 +46,12 @@ class ContactEnterpriseController extends Controller
                     'contact_states.name as state_name'
                 )
                 ->join('contact_enterprise', 'contacts.id', '=', 'contact_enterprise.contact_id')
+                ->join('enterprises', 'contact_enterprise.enterprise_id', '=', 'enterprises.id')
                 ->join('contact_sector', 'contacts.id', '=', 'contact_sector.contact_id')
                 ->join('contact_states', 'contact_enterprise.state_id', '=', 'contact_states.id')
+                ->when($client_type, function ($query) use ($client_type) {
+                    $query->where('enterprises.client_type', $client_type);
+                })
                 ->when($enterprise_id, function ($query) use ($enterprise_id) {
                     $query->where('contact_enterprise.enterprise_id', $enterprise_id);
                 })
@@ -55,6 +61,8 @@ class ContactEnterpriseController extends Controller
                 ->when($state_id, function ($query) use ($state_id) {
                     $query->where('contact_states.id', $state_id);
                 })
+                ->orderBy('contacts.fullname', 'asc')
+                ->latest('contacts.created_at')
                 ->get();
                 
             $response = fractal()
@@ -274,6 +282,65 @@ class ContactEnterpriseController extends Controller
             
             $state_id = intval($request->input('state.id'));
             $contact->enterprises()->updateExistingPivot($enterprise_id, ['state_id'=>$state_id]);
+            
+        } catch (ModelNotFoundException $ex) {
+            return response()->json(['error' => 'Record not found. Update error.'], 404);
+        }
+         
+        return response()->make('', 204);
+    }
+    
+    /**
+     * PUT|PATCH /enterprises/{$enterprise_id}/contacts/{$contact_id}/replace-with/{$replacement_id}
+     */
+    public function replace(Request $request, $enterprise_id, $contact_id, $replacement_id)
+    {
+        try {  
+
+            // get contacts
+            $contact = Contact::findOrFail($contact_id);
+            $replacement = Contact::findOrFail($replacement_id);
+                
+            // states
+            $replaced_state = ContactState::where('keyname', '=', 'reemplazado')->first();
+            $active_state = ContactState::where('keyname', '=', 'activo')->first();
+           
+            // change states
+            $contact->enterprises()->updateExistingPivot($enterprise_id, ['state_id'=>$replaced_state->id]);
+            $replacement->enterprises()->updateExistingPivot($enterprise_id, ['state_id'=>$active_state->id]);
+            
+        } catch (ModelNotFoundException $ex) {
+            return response()->json(['error' => 'Record not found. Update error.'], 404);
+        }
+         
+        return response()->make('', 204);
+    }
+    
+    /**
+     * PUT|PATCH /enterprises/{$enterprise_id}/contacts/{$contact_id}/transfer-to/{$target_id}
+     */
+    public function transfer(Request $request, $enterprise_id, $contact_id, $target_id)
+    {
+        try {  
+
+            // get contact
+            $contact = Contact::findOrFail($contact_id);
+                
+            // states
+            $transfer_state = ContactState::where('keyname', '=', 'trasladado')->first();
+            $active_state = ContactState::where('keyname', '=', 'activo')->first();
+           
+            // transfer/set state in target enterprise only if not already exists
+            $target = $contact->enterprises()->find($target_id);            
+            if($target !== null) {
+                // already exists
+                return response()->json(['error' => 'Contact already exists in that enterprise'], 409); 
+            }                
+            $contact->enterprises()->attach($target_id, ['state_id'=>$active_state->id]); // active
+            
+            // change state in current enterprise
+            $contact->enterprises()->updateExistingPivot($enterprise_id, ['state_id'=>$transfer_state->id]); // transfered
+            
             
         } catch (ModelNotFoundException $ex) {
             return response()->json(['error' => 'Record not found. Update error.'], 404);

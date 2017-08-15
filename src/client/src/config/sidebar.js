@@ -3,10 +3,10 @@ export default {
         items : [{
             groupTitle: "Empresas",
             route: "/empresas",
-            icon: "fa fa-group"
+            icon: "fa fa-building-o"
         }, {
             groupTitle: "Contactos",
-            route: "/empresas/contactos",
+            route: "/empresas/contactos?state_id=1",
             icon: "fa fa-user"
         }, {
             groupTitle: "Proveedores",
@@ -14,16 +14,21 @@ export default {
             route: "/proveedores"
         }, {
             groupTitle: "Productos",
-            icon: "fa fa-ship",
+            icon: "fa fa-shopping-cart",
             route: "/productos"
         }, {
             groupTitle: "Ventas",
             icon: "fa fa-money",
-            route: "/ventas"
+            route: "/ventas",
+            items: [{
+                title: "Numeración",
+                icon: "fa fa-tasks",
+                route: "/numeracion",
+            }]
         }, {
             groupTitle: "Tareas",
-            icon: "icon-bell",
-            route: "/tareas",
+            icon: "fa fa-tasks",
+            route: "/tareas"
         }, {
             groupTitle: "Usuarios",
             icon: "icon-user",

@@ -21,12 +21,12 @@ class CreateProvidersTable extends Migration
             $table->string('cuit', 13)->unique();
             $table->integer('country_id')->unsigned();
             $table->integer('province_id')->unsigned();
-            $table->string('town', 40);
+            $table->string('town', 40)->nullable();
             $table->string('address', 120);
             $table->string('zipcode', 12)->nullable();
-            $table->text('phone');
-            $table->text('email');
-            $table->text('web')->nullable();
+            $table->text('phone')->nullable();
+            $table->text('email', 60)->nullable();
+            $table->text('web', 255)->nullable();
             $table->text('observations')->nullable();
             $table->timestamps();
             $table->softDeletes();

@@ -1,12 +1,12 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import config from '../../config/app.js'
+import config from 'Config/app.js'
 import { withRouter } from 'react-router'
 import queryString from 'query-string'
 import Select from 'react-select'
 import ContactsTable from './table'
-import FlashMessages from '../../FlashMessages'
+import FlashMessages from 'FlashMessages'
 import swal from 'sweetalert2'
 import _ from 'lodash'
 
@@ -23,6 +23,8 @@ class ContactsList extends Component {
         fetchContactStates: PropTypes.func.isRequired,
         onRemoveContact: PropTypes.func.isRequired,
         onChangeContactState: PropTypes.func.isRequired,
+        onTransferContact: PropTypes.func.isRequired,
+        onReplaceContact: PropTypes.func.isRequired,
         history: PropTypes.object.isRequired
     }
 
@@ -33,6 +35,8 @@ class ContactsList extends Component {
         this.filterByEnterprise = this.filterByEnterprise.bind(this);
         this.filterBySector = this.filterBySector.bind(this);
         this.filterByState = this.filterByState.bind(this);
+        this.onReplaceClicked = this.onReplaceClicked.bind(this);
+        this.onTransferClicked = this.onTransferClicked.bind(this);
         this.onWithdrawClicked = this.onWithdrawClicked.bind(this);
         this.onDeleteClicked = this.onDeleteClicked.bind(this);
 
@@ -53,7 +57,7 @@ class ContactsList extends Component {
         const query = this.state.query;
 
         /**
-         * Get all dropdownlists data befor fetching table data
+         * Get all dropdownlists data before fetching table data
          */
         this.props.fetchEnterpriseList()
         .then(()=>{
@@ -66,9 +70,8 @@ class ContactsList extends Component {
         .then(()=>{
             // fetch contact states ddl data
             return this.props.fetchContactStates().then(()=>{
-
-                // defaults to Activo. Important!
-                let contact_state = self.props.states[0];
+                
+                let contact_state; 
 
                 // apply predefined filter if present in URI  
                 if(query.state_id) {
@@ -107,11 +110,15 @@ class ContactsList extends Component {
             state_id: this.state.filters.contact_state.id
         };
 
+        // get table data
         this.props.fetchEnterpriseContactList(filters);
 
+        // reflect filters in URI
         this.props.history.push({
             search: queryString.stringify(filters)
         });
+
+        this.setState({query: filters});
     }
 
     filterByEnterprise(enterprise, fetch = true) {
@@ -190,9 +197,7 @@ class ContactsList extends Component {
             self.props.onRemoveContact(id).catch(_=>{
                 Promise.reject(); // TODO: capture error 500 before global capture
             });
-        }, function(dismiss) {  
-            console.log("dismiss deleting");          
-        })  
+        }, _=>{})  
     }
 
     /**
@@ -205,10 +210,148 @@ class ContactsList extends Component {
 
         const enterprise_id = data.enterprise_id;
         const contact_id = data.contact_id;
-        const contact_state = _.find(this.props.states, {value: 'baja'});
       
         // payload
-        const payload = {
+        const payload = this.mapState(contact_id, 'baja');
+
+        swal({
+            ... config.tables.swalConfirm,
+            type: null,
+            title: "Baja",
+            text: "Se marcará en estado de Baja. Confirma?",
+        }).then(function () {
+            self.props.onChangeContactState(data.enterprise_id, payload);
+        }, _=>{})  
+    }
+
+    onTransferClicked(data) {
+
+        const self = this;
+       
+        if(!this.state.query.enterprise_id) {
+            swal({
+                type: 'error',
+                html: 'Debe antes filtar el listado por empresa para proceder con esta acción.'
+            })
+            return;
+        }
+
+        // prepare list of enterprises
+        let options = {};
+        self.props.enterprises.forEach(x=>{
+            if(x.id === data.enterprise_id) return; // skip current
+            return options[x.id] = x.label;
+        })
+
+        swal({
+            ... config.tables.swalConfirm,
+            type: null,
+            title: "Trasladar a",
+            text: null,
+            input: 'select',
+            inputOptions: options
+        }).then(function (target_id) {
+
+            const payload = {
+                ...self.mapState(data.contact_id, 'trasladado'),
+                origin: data.enterprise_id,
+                target: parseInt(target_id)
+            }
+
+            // replace
+            self.props.onTransferContact(payload)
+                .then(_=>{
+                    swal({
+                        type: 'success',
+                        html: 'Se ha trasladado el contacto'
+                    })
+                })
+                .catch(err=>{
+                    if(err.response && err.response.status == 409) {
+                        swal({
+                            type: 'error',
+                            html: 'El contacto ya existe en la empresa seleccionada'
+                        })
+                    } else {
+                        swal({
+                            type: 'error',
+                            html: 'Hubo un error trasladando el contacto'
+                        })
+                    }
+                });               
+        }, _=>{})
+    }
+
+    onReplaceClicked(data) {
+
+        const self = this;
+    
+        if(!this.state.query.enterprise_id) {
+            swal({
+                type: 'error',
+                html: 'Debe antes filtar el listado por empresa para proceder con esta acción.'
+            })
+            return;
+        }
+
+        // prepare list of contacts
+        let options = {};
+        self.props.contacts.forEach(x=>{
+            if(x.id === data.contact_id) return; // skip self
+            if(x.state.keyname === 'baja') return // skip non active users
+            return options[x.id] = x.fullname;
+        })
+       
+        if(!Object.keys(options).length) {
+            swal({
+                type: 'error',
+                text: 'No hay reemplazos posibles'
+            })
+        } else {
+            swal({
+                ... config.tables.swalConfirm,
+                type: null,
+                title: "Reemplazar por",
+                text: null,
+                input: 'select',
+                inputOptions: options
+            }).then(function (replacement_id) {
+
+                const payload = {
+                    enterprise_id: data.enterprise_id,
+                    replaced: self.mapState(data.contact_id, 'reemplazado'),
+                    replacement: self.mapState(parseInt(replacement_id), 'activo')
+                }
+
+                // replace
+                self.props.onReplaceContact(payload)
+                    .then(_=>{
+                        swal({
+                            type: 'success',
+                            html: 'Se ha reemplazado el contacto'
+                        })
+                    })
+                    .catch(err=>{
+                        swal({
+                            type: 'error',
+                            html: 'Hubo un error reemplazando el contacto'
+                        })
+                    });               
+            }, _=>{})
+        }
+    }
+
+    /**
+     * Prepares data to send to server
+     * 
+     * @param {integer} contact_id 
+     * @param {string} keyname (state keyname) 
+     */
+    mapState(contact_id, keyname) {
+
+        const contact_state = _.find(this.props.states, {value: keyname});
+     
+        return {
             contact_id,
             state: {
                 id: contact_state.id,
@@ -216,16 +359,6 @@ class ContactsList extends Component {
                 name: contact_state.label
             }
         };
-
-        swal({
-            ... config.tables.onDeleteSwal,
-            title: "Baja",
-            text: "Se marcará en estado Baja. Confirma?",
-        }).then(function () {
-            self.props.onChangeContactState(data.enterprise_id, contact_id, payload);
-        }, function(dismiss) {  
-            console.log("dismiss withdrawing");          
-        })  
     }
 
     render() {
@@ -240,9 +373,20 @@ class ContactsList extends Component {
 
                     <div className="portlet light bordered">
                         <div className="portlet-title">
-                            <div className="caption">
-                                <i className="icon-social-dribbble font-dark hide"></i>
-                                <span className="caption-subject font-dark bold uppercase">Contactos</span>
+
+                            <div className="row">
+                                <div className="col-xs-12 col-sm-6">
+                                    <div className="caption">
+                                        <i className="icon-social-dribbble font-dark hide"></i>
+                                        <span className="caption-subject font-dark bold uppercase">Contactos</span>
+                                    </div>
+                                </div>
+
+                                <div className="col-xs-12 col-sm-6">
+                                    <Link to="/empresas" className='btn sbold green pull-right'>                                              
+                                        <i className="fa fa-arrow-left"></i> <span> Volver</span>                                
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                         <div className="portlet-body">
@@ -252,10 +396,10 @@ class ContactsList extends Component {
                             <div className="table-toolbar">
              
                                 <div className="row">
-                                    <div className="col-md-6">
+                                    <div className="col-md-11">
                                         <div className="row">
 
-                                            <div className="col-md-4">
+                                            <div className="col-md-4 col-lg-5 form-group">
                                                 <Select
                                                 name="enterprise"
                                                 placeholder="Empresa..."
@@ -265,7 +409,7 @@ class ContactsList extends Component {
                                                 />
                                             </div>
 
-                                            <div className="col-md-4">
+                                            <div className="col-md-4 col-lg-5 form-group">
                                                 <Select
                                                 name="sector"
                                                 placeholder="Sector..."
@@ -276,7 +420,7 @@ class ContactsList extends Component {
                                                 />
                                             </div>
 
-                                            <div className="col-md-4">
+                                            <div className="col-md-4 col-lg-2 form-group">
                                                 <Select
                                                 name="contact_state"
                                                 placeholder="Estado..."
@@ -287,7 +431,7 @@ class ContactsList extends Component {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="col-md-6 text-right">
+                                    <div className="col-md-1 text-right">                                       
                                         <div className="btn-group">
                                             <Link to="/empresas/contactos/alta" className='btn sbold green'>                                              
                                                 <i className="fa fa-plus"></i> <span> Alta</span>                                
@@ -301,6 +445,8 @@ class ContactsList extends Component {
                                 (this.props.contacts) && 
 
                                 <ContactsTable data={this.props.contacts} 
+                                    onReplaceClicked={this.onReplaceClicked}
+                                    onTransferClicked={this.onTransferClicked}
                                     onWithdrawClicked={this.onWithdrawClicked}
                                     onDeleteClicked={this.onDeleteClicked} />
                             }

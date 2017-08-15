@@ -23,7 +23,7 @@ class Sale extends Model
     
     public function contact()
     {
-        return $this->hasOne('App\Contact');
+        return $this->belongsTo('App\Contact');
     }   
     
     public function products()
@@ -38,7 +38,7 @@ class Sale extends Model
     
     public function status()
     {
-        return $this->belongsTo('App\SaleStatus');
+        return $this->belongsTo('App\SaleStatuses', 'sale_status_id');
     }    
     
     public function logs()
@@ -46,8 +46,8 @@ class Sale extends Model
         return $this->hasMany('App\SaleStatusLog');
     }
     
-    public function attachments()
+    public function quotation()
     {
-        return $this->hasMany('App\Attachments');
+        return $this->hasOne('App\Quotation');
     }
 }

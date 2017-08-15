@@ -20,6 +20,7 @@ class Form extends Component {
         data: PropTypes.array,
         contacts: PropTypes.isRequired,
         getInteraction: PropTypes.func.isRequired,
+        getContacts: PropTypes.func.isRequired,
         onAddInteraction: PropTypes.func.isRequired,
         onSaveInteraction: PropTypes.func.isRequired,
         unselectInteraction: PropTypes.func.isRequired,
@@ -125,9 +126,11 @@ class Form extends Component {
 
     save(data) {
      
+        const self = this;
+
         if(!data.id) {
             this.props.onAddInteraction(data.contact.id, data).then(_=>{
-                this.props.flashSuccess({
+                self.props.flashSuccess({
                     text: "Se ha guardado los datos"
                 })
                 this.clear();
@@ -140,7 +143,7 @@ class Form extends Component {
             });  
         } else {
             this.props.onSaveInteraction(data.contact.id, data).then(err=>{
-                this.props.flashSuccess({
+                self.props.flashSuccess({
                     text: "Se ha guardado los datos"
                 })
                 this.clear();

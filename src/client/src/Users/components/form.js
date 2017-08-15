@@ -1,22 +1,26 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import FlashMessages from '../../FlashMessages'
+import Select from 'react-select'
 import _ from 'lodash'
 
 class Form extends Component {
 
     static defaultProps = {
+        role: {},
         password: '',
         password_confirmation: ''
     };
 
     static PropsType = {
         data: PropTypes.array,
+        roles: PropTypes.array.isRequired,
+        fetchUserRoles: PropTypes.func.isRequired,
         onSaveUser: PropTypes.func.isRequired,
         onCancel: PropTypes.func.isRequired
     }
 
-    constructor(props = {}) {
+    constructor(props) {
         
         super(props)
         
@@ -24,8 +28,16 @@ class Form extends Component {
 
         // events
         this.handleInputChange = this.handleInputChange.bind(this);
+        this.handleOptionChange = this.handleOptionChange.bind(this);
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
+    }
+
+    componentDidMount() {
+        this.props.fetchUserRoles().then(_=>{
+            // set default role
+            this.state.role =  this.props.roles[0];
+        });
     }
 
     /**
@@ -52,8 +64,20 @@ class Form extends Component {
         });
     }
 
+    /**
+     * Handle dropdowns changes 
+     * @param {*} field name
+     * @param {*} value 
+     */
+    handleOptionChange(field, value) {
+      
+        this.setState({ 
+            [field]: value 
+        });
+    }
+
     save() {
-        const data = this.state;        
+        const data = this.state;  
         this.props.onSaveUser(data);  
     }
 
@@ -68,7 +92,7 @@ class Form extends Component {
             <div className="portlet light bordered">
                 <div className="portlet-title">
                     <div className="caption font-red-sunglo">
-                        <i className="icon-settings font-red-sunglo"></i>
+                        <i className="fa fa-circles font-red-sunglo"></i>
                         <span className="caption-subject bold uppercase">
                             { this.props.data.id ? ' Edición' : ' Alta usuario' }</span>
                     </div>                    
@@ -79,7 +103,7 @@ class Form extends Component {
                         <FlashMessages target="form" />
                     </div>
 
-                    <form role="form">
+                    <form role="form" autoComplete="off">
                         <div className="form-body">
 
                             <div className="form-group">
@@ -99,20 +123,43 @@ class Form extends Component {
                                 </div>
                             </div>
 
-                            <div className="form-group">
-                                <label>Nombre de usuario</label>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        name="username"                                        
-                                        onChange={this.handleInputChange}
-                                        className="form-control"
-                                        placeholder="Nombre de usuario"
-                                        value={this.state.username}
-                                        />
-                                    <span className="input-group-addon">
-                                        <i className="fa fa-user"></i>
-                                    </span>
+                            <div className="row">
+                                <div className="col-xs-12 col-sm-6">
+                                    <div className="form-group">
+                                        <label>Nombre de usuario</label>
+                                        <div className="input-group">
+                                            <input
+                                                type="text"
+                                                name="username"                                        
+                                                onChange={this.handleInputChange}
+                                                className="form-control"
+                                                placeholder="Nombre de usuario"
+                                                value={this.state.username}
+                                                />
+                                            <span className="input-group-addon">
+                                                <i className="fa fa-user"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-xs-12 col-sm-6">
+                                    <div className="form-group">
+                                        <label>Rol</label>
+                                        <div className="input-group">
+                                             <Select 
+                                                name="role" 
+                                                placeholder="Seleccione..."
+                                                value={this.state.role.id} 
+                                                clearable={false}
+                                                onChange={obj=>{this.handleOptionChange("role", obj)}} 
+                                                options={this.props.roles}
+                                            />
+                                            <span className="input-group-addon">
+                                                <i className="fa fa-user"></i>
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -131,11 +178,18 @@ class Form extends Component {
                                     </span>
                                 </div>
                             </div>
+
+                            { this.props.data.id &&
+                                <div className="note note-info">
+                                    <h4 className="block">Opcional</h4>
+                                    <p>Al dejar vacios los siguientes campos no se sobreescribirá la <b>contraseña</b> actual</p>
+                                </div>
+                            }
                             
                             <div className="form-group">
                                 <label>Contraseña</label>
                                 <div className="input-group">
-                                    <input
+                                    <input autoComplete="off"
                                         type="password"
                                         name="password"                                        
                                         onChange={this.handleInputChange}

@@ -19,7 +19,9 @@ class EnterprisesList extends Component {
         fetchEnterpriseList: PropTypes.func.isRequired,
         onRemoveEnterprise: PropTypes.func.isRequired,
         location: PropTypes.object.isRequired,
-        history: PropTypes.object.isRequired
+        history: PropTypes.object.isRequired,  
+        flashSuccess: PropTypes.func.isRequired,  
+        flashError: PropTypes.func.isRequired
     }
 
     constructor(props) {
@@ -29,7 +31,6 @@ class EnterprisesList extends Component {
         this.filterByCountry = this.filterByCountry.bind(this);
         this.filterByClientType = this.filterByClientType.bind(this);
 
-        // define table columns
         this.state = {              
             client_types: [
                 { 
@@ -52,19 +53,19 @@ class EnterprisesList extends Component {
 
         const query = queryString.parse(location.search);
 
-        // fetch data
+        // fetch data and apply predefined filters
         this.props.fetchCountryList().then(()=>{
 
-            // apply predefined filter            
+            // apply predefined client type      
+            if(query.client_type) {
+                this.state.filters.client_type = query.client_type;  
+            } 
+
+            // apply predefined country             
             const country_id = query.country_id ? query.country_id : config.defaults.country;
             this.state.filters.country = _.find(this.props.countries, {id: parseInt(country_id)});
             this.filter();
         });   
-
-        // apply predefined filter     
-        if(query.client_type) {
-            this.state.filters.client_type = query.client_type;  
-        } 
     }
 
     /**
@@ -116,13 +117,24 @@ class EnterprisesList extends Component {
       
         const self = this;
 
+        const enterprise = _.find(this.props.enterprises, {id});
+        const name = enterprise.legal_name;
+
         swal({
             ... config.tables.onDeleteSwal,
-            text: "Se eliminará la empresa",
+            text: "Se eliminará la empresa " + name,
         }).then(function () {
-            self.props.onRemoveEnterprise(id);
+            self.props.onRemoveEnterprise(id).then(_=>{
+                self.props.flashSuccess({
+                    text: "Se ha eliminado la empresa " + name
+                })
+            }).catch(err=>{
+                self.props.flashError({
+                    text: "Hubo un error al eliminar la empresa " + name
+                })
+            }); 
         }, function(dismiss) {  
-            console.log("dismiss deleting");          
+                  
         })  
     }
 
@@ -153,7 +165,7 @@ class EnterprisesList extends Component {
                                     <div className="col-md-6">
                                         <div className="row">
 
-                                            <div className="col-md-4">
+                                            <div className="col-md-6 form-group">
                                                 <Select
                                                 name="country"
                                                 placeholder="País..."
@@ -163,7 +175,7 @@ class EnterprisesList extends Component {
                                                 />
                                             </div>
 
-                                            <div className="col-md-3">
+                                            <div className="col-md-4 form-group">
                                                 <select className="form-control" value={this.state.filters.client_type} onChange={this.filterByClientType}>
                                                     { this.state.client_types.map( (type, key) => 
                                                         <option value={ type.key } key={key}>{ type.name }</option>

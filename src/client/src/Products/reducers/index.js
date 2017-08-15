@@ -15,10 +15,20 @@ function products (state = {}, action) {
                 selected: {}
             }); 
         case 'ADD_PRODUCT':
+
+            /* In case user reload form page and there's no cache for the list to insert this item */
+            if(typeof state.list === 'undefined') 
+                return state;
+
             return Object.assign({}, state, {
                 list: state.list.concat([action.payload.data])
             });
         case 'SAVE_PRODUCT':
+
+            /* In case user reload form page and there's no cache for the list, so it cannot be updated */
+            if(typeof state.list === 'undefined') 
+                return state;
+
             // replace item in list
             const updatedList = state.list.map(item => {
 

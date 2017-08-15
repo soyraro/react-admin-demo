@@ -152,10 +152,12 @@ export function saveContact(enterprise_id, contact_id, data) {
     }
 }
 
-export function updateContactState(enterprise_id, contact_id, data) {
+export function updateContactState(enterprise_id, data) {
 
     // persist data in DB
     return (dispatch) => { 
+
+        const { contact_id, state } = data;
 
         const endpoint = '/enterprises/' + enterprise_id + '/contacts/' + contact_id + '/state';
        
@@ -165,10 +167,80 @@ export function updateContactState(enterprise_id, contact_id, data) {
             dispatch({
                 type: 'SAVE_CONTACT',
                 payload: {
-                    data
+                    data: {
+                        id: contact_id,
+                        enterprise_id,
+                        state
+                    }
                 }
             });
         })
+    }
+}
+
+export function replaceContact(data) {
+
+    const { enterprise_id, replaced, replacement } = data;
+
+    // persist data in DB
+    return (dispatch) => { 
+
+        const endpoint = '/enterprises/' + enterprise_id + '/contacts/' + replaced.contact_id + '/replace-with/' + replacement.contact_id;
+       
+        return axios.put(endpoint)
+            .then(response => { 
+
+                // update store
+                // mark this contact as "active"
+                dispatch({
+                    type: 'SAVE_CONTACT',
+                    payload: {
+                        data: {
+                            id: replacement.contact_id,
+                            enterprise_id,
+                            state: replacement.state
+                        }
+                    }
+                });
+
+                 // mark this contact as "replaced"
+                dispatch({
+                    type: 'SAVE_CONTACT',
+                    payload: {
+                        data: {
+                            id: replaced.contact_id,
+                            enterprise_id,
+                            state: replaced.state
+                        }
+                    }
+                });
+            })
+    }
+}
+
+export function transferContact(data) {
+    const {contact_id, origin, target, state } = data;
+
+    // persist data in DB
+    return (dispatch) => { 
+
+        const endpoint = '/enterprises/' + origin + '/contacts/' + contact_id + '/transfer-to/' + target;
+       
+        return axios.put(endpoint)
+            .then(response => { 
+
+                // mark this contact as "transfered"
+                dispatch({
+                    type: 'SAVE_CONTACT',
+                    payload: {
+                        data: {
+                            id: contact_id,
+                            enterprise_id: origin,
+                            state: state
+                        }
+                    }
+                });
+            })
     }
 }
 

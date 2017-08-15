@@ -94,9 +94,7 @@ class ProductsTable extends Component {
 
     render() {
             
-        const options = {
-            sizePerPage: config.tables.sizePerPage
-        };
+        const options = config.tables.defaults;
 
         return (
                       
@@ -115,6 +113,7 @@ class ProductsTable extends Component {
                             dataSort={_.isNil(col.sort) ? true : col.sort}
                             dataFormat={col.formatter}
                             formatExtraData={col}
+                            filterFormatted={!_.isNil(col.formatter)}
                             >{col.title}</TableHeaderColumn>
                     })
                 }

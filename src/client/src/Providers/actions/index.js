@@ -39,8 +39,8 @@ export function fetchProviderList(filters, force = false) {
  * Cache
  */
 function shouldFetchProviders(state) {
-    const providers = state.providers
-    return (_.isEmpty(providers)) ? true : false;
+    const providers = state.providers.list
+    return (providers.length === 0) ? true : false;
 }
 
 export function getProvider(id) {
@@ -50,8 +50,6 @@ export function getProvider(id) {
       
         return axios.get('/providers/'+id).then(response => { 
             dispatch(providerSelected(response.data.data));
-        }).catch(function (err) {
-            console.log(err);
         });
     }
 }
@@ -81,30 +79,55 @@ export function providerUnselected() {
 }
 
 export function addProvider(data) {
-    return {
-        type: 'ADD_PROVIDER',
-        payload: {
-            data
-        }
-    };
+
+    // persist data in DB
+    return (dispatch) => { 
+
+        return axios.post('/providers', data).then(response => { 
+
+            // set id
+            data.id = response.data.provider_id;
+
+            dispatch({
+                type: 'ADD_PROVIDER',
+                payload: {
+                    data
+                }
+            });
+        })
+    }
 }
 
 export function saveProvider(data) {
-    return {
-        type: 'SAVE_PROVIDER',
-        payload: {
-            data
-        }
-    };
+
+    // persist data in DB
+    return (dispatch) => { 
+
+        return axios.put('/providers/' + data.id, data).then(response => { 
+            dispatch({
+                type: 'SAVE_PROVIDER',
+                payload: {
+                    data
+                }
+            });
+        })
+    }
 }
 
 export function removeProvider(id) {
-    return {
-        type: 'REMOVE_PROVIDER',
-        payload: {
-            id
-        }
-    };
+
+    // remove data from DB
+    return (dispatch) => { 
+
+        return axios.delete('/providers/' + id).then(response => { 
+            dispatch({
+                type: 'REMOVE_PROVIDER',
+                payload: {
+                    id
+                }
+            });
+        })
+    }
 }
 
 

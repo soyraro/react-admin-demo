@@ -35,8 +35,6 @@ export function getEnterprise(id) {
       
         return axios.get('/enterprises/'+id).then(response => { 
             dispatch(enterpriseSelected(response.data.data));
-        }).catch(function (err) {
-            console.log(err);
         });
     }
 }

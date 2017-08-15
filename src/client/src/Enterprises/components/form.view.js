@@ -10,6 +10,11 @@ class Form extends Component {
         data: PropTypes.object,
         countries: PropTypes.array.isRequired,
         provinces: PropTypes.array.isRequired,  
+        handleCountryChange: PropTypes.func.isRequired,  
+        handleInputChange: PropTypes.func.isRequired,  
+        handleQuillChange: PropTypes.func.isRequired,  
+        handleOptionChange: PropTypes.func.isRequired,  
+        handleNestedValueChange: PropTypes.func.isRequired,  
         save: PropTypes.func.isRequired,  
         cancel: PropTypes.func.isRequired,  
     }
@@ -21,70 +26,12 @@ class Form extends Component {
         this.state = props.data;
       
         // events
-        this.handleInputChange = this.handleInputChange.bind(this);
-        this.handleQuillChange = this.handleQuillChange.bind(this);
-        this.handleOptionChange = this.handleOptionChange.bind(this);
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
     }
 
-    componentWillReceiveProps(newProps) {
+    componentWillReceiveProps(newProps) { 
         this.setState(newProps.data);
-    }
-
-    /**
-     * Handle form interactions
-     * @param {*} event 
-     */
-    handleInputChange(event) {
-      
-        const target = event.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
-        const name = target.name;
-
-        this.setState({
-            [name]: value
-        });
-    }
-
-    /**
-     * Handle form nested values
-     * @param {*} event 
-     */
-    handleNestedValueChange(parent, field, event) {
-
-        const value = event.target.value;
-      
-        const data = {
-            [parent]: Object.assign({}, this.state[parent], {
-                [field]: value
-            })
-        }
-
-        this.setState(data);
-    }
-
-    /**
-     * Handle Quill wysiwyg
-     * @param {*} event 
-     */
-    handleQuillChange(field, value) {
-
-        this.setState({
-            [field]: value
-        });
-    }
-
-    /**
-     * Handle dropdowns & radio buttons 
-     * @param {*} field name
-     * @param {*} value 
-     */
-    handleOptionChange (field, value) {
-
-        this.setState({
-            [field]: value
-        });
     }
 
     save() {
@@ -118,7 +65,7 @@ class Form extends Component {
                     <div className="row">
                         <div className="col-xs-12 col-sm-6">
                             <div className="caption font-red-sunglo">
-                                <i className="icon-settings font-red-sunglo"></i>
+                                <i className="fa fa-circles font-red-sunglo"></i>
                                 <span className="caption-subject bold uppercase">
                                    { this.props.data.id ? ' Edición' : ' Alta empresas' }</span>
                             </div>     
@@ -137,19 +84,19 @@ class Form extends Component {
                         <div className="form-body">
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-4">
+                                <div className="col-xs-12 col-sm-6 col-lg-6">
                                     <div className="form-group">
                                         <label>Razón Social</label>
                                         <input type="text" 
-                                            className="form-control" 
+                                            className="form-control text-uppercase" 
                                             placeholder="Razón Social"
                                             name="legal_name"
                                             value={data.legal_name}
-                                            onChange={this.handleInputChange} />                                            
+                                            onChange={this.props.handleInputChange} />                                            
                                     </div>
                                 </div>
 
-                                <div className="col-xs-12 col-sm-3 col-md-2">
+                                <div className="col-xs-12 col-sm-4 col-lg-3">
                                     <div className="form-group">
                                         <label>CUIT</label>
                                         <input type="text" 
@@ -157,26 +104,25 @@ class Form extends Component {
                                             placeholder="CUIT"
                                             name="cuit"
                                             value={data.cuit}
-                                            onChange={this.handleInputChange} />
+                                            onChange={this.props.handleInputChange} />
                                     </div>
                                 </div>
 
-                                <div className="col-xs-12 col-sm-4">
+                                <div className="col-xs-12 col-sm-2 col-lg-2">
                                     <div className="form-group">
-                                        <label>Tipo</label>
                                         <div className="mt-radio-inline">
                                             <label className="mt-radio">
                                                 Cliente
                                                 <input type="radio" value="cliente" name="client_type" 
                                                     checked={data.client_type == 'cliente'} 
-                                                    onChange={e=>{this.handleOptionChange("client_type", e.target.value)}} />
+                                                    onChange={e=>{this.props.handleOptionChange("client_type", e.target.value)}} />
                                                 <span></span>
                                             </label>
                                             <label className="mt-radio">
                                                 Otros clientes
                                                 <input type="radio" value="otros_clientes" name="client_type" 
                                                     checked={data.client_type == 'otros_clientes'} 
-                                                    onChange={e=>{this.handleOptionChange("client_type", e.target.value)}} />
+                                                    onChange={e=>{this.props.handleOptionChange("client_type", e.target.value)}} />
                                                 <span></span>
                                             </label>
                                         </div>
@@ -185,7 +131,7 @@ class Form extends Component {
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-3">
+                                <div className="col-xs-12 col-sm-4 col-lg-3">
                                     <div className="form-group">
                                         <label>País</label>
                                         { this.props.countries.length > 0 && data.country &&
@@ -200,7 +146,7 @@ class Form extends Component {
                                     </div>
                                 </div>
 
-                                <div className="col-xs-12 col-sm-3">
+                                <div className="col-xs-12 col-sm-4 col-lg-3">
                                     <div className="form-group">
                                         <label>Provincia</label>
                                         { this.props.provinces.length > 0 && data.province &&
@@ -210,13 +156,13 @@ class Form extends Component {
                                                 noResultsText="Sin resultados"
                                                 value={data.province.id}
                                                 options={this.props.provinces}
-                                                onChange={obj=>{this.handleOptionChange("province", obj)}}
+                                                onChange={obj=>{this.props.handleOptionChange("province", obj)}}
                                                 />
                                         }    
                                     </div>
                                 </div>
 
-                                <div className="col-xs-12 col-sm-3">
+                                <div className="col-xs-12 col-sm-4 col-lg-3">
                                     <div className="form-group">
                                         <label>Localidad</label>
                                         <input type="text" 
@@ -224,14 +170,14 @@ class Form extends Component {
                                             placeholder="Localidad" 
                                             name="town"
                                             value={data.town}
-                                            onChange={this.handleInputChange} />
+                                            onChange={this.props.handleInputChange} />
                                     </div>
                                 </div>
 
                             </div>
 
                              <div className="row">
-                                <div className="col-xs-6 col-sm-1">
+                                <div className="col-xs-12 col-sm-4 col-lg-2">
                                     <div className="form-group">
                                         <label>Código Postal</label>
                                         <input type="text" 
@@ -239,11 +185,11 @@ class Form extends Component {
                                             placeholder="Cód. Postal" 
                                             name="zipcode"
                                             value={data.zipcode}
-                                            onChange={this.handleInputChange} />
+                                            onChange={this.props.handleInputChange} />
                                     </div>
                                 </div>
 
-                                <div className="col-xs-12 col-sm-4">
+                                <div className="col-xs-12 col-sm-8 col-md-10 col-lg-7">
                                     <div className="form-group">
                                         <label>Dirección</label>
                                         <input type="text" 
@@ -251,20 +197,22 @@ class Form extends Component {
                                             placeholder="Dirección" 
                                             name="address"
                                             value={data.address}
-                                            onChange={this.handleInputChange} />
+                                            onChange={this.props.handleInputChange} />
                                     </div>
                                 </div>
                             </div>    
 
-                            <div className="form-group">
-                                <label>Teléfonos</label>
-                                <input type="text" 
-                                    className="form-control" 
-                                    placeholder="Teléfonos"
-                                    name="phone"
-                                    value={data.phone}
-                                    onChange={this.handleInputChange} />
-                            </div>
+                            <div className="row">             
+                                <div className="form-group  col-xs-12 col-sm-12 col-md-8 col-lg-9">
+                                    <label>Teléfonos</label>
+                                    <input type="text" 
+                                        className="form-control" 
+                                        placeholder="Teléfonos"
+                                        name="phone"
+                                        value={data.phone}
+                                        onChange={this.props.handleInputChange} />
+                                </div>
+                            </div>  
 
                             <div className="row">
                                 <div className="col-sm-12 col-md-6">
@@ -276,7 +224,7 @@ class Form extends Component {
                                                 placeholder="Link"
                                                 name="invoice_web_link"
                                                 value={data.invoice_web.link}
-                                                onChange={e=>this.handleNestedValueChange("invoice_web", "link", e)}  />
+                                                onChange={e=>this.props.handleNestedValueChange("invoice_web", "link", e)}  />
                                         </div>
                                         <div className="input-group full-width">
                                             <div className="row">
@@ -286,7 +234,7 @@ class Form extends Component {
                                                         placeholder="Usuario"
                                                         name="invoice_web_user"
                                                         value={data.invoice_web.user}
-                                                        onChange={e=>this.handleNestedValueChange("invoice_web", "user", e)} />
+                                                        onChange={e=>this.props.handleNestedValueChange("invoice_web", "user", e)} />
                                                 </div>
                                                 <div className="col-xs-12 col-sm-6">
                                                     <input type="text" 
@@ -294,7 +242,7 @@ class Form extends Component {
                                                         placeholder="Contraseña"
                                                         name="invoice_web_password"
                                                         value={data.invoice_web.password}
-                                                        onChange={e=>this.handleNestedValueChange("invoice_web", "password", e)}  />
+                                                        onChange={e=>this.props.handleNestedValueChange("invoice_web", "password", e)}  />
                                                 </div>
                                             </div>
                                         </div>
@@ -312,7 +260,7 @@ class Form extends Component {
                                                 placeholder="Link"
                                                 name="bidding_web_link"
                                                 value={data.bidding_web.link}
-                                                onChange={e=>this.handleNestedValueChange("bidding_web", "link", e)} />
+                                                onChange={e=>this.props.handleNestedValueChange("bidding_web", "link", e)} />
                                         </div>
                                         <div className="input-group full-width">
                                             <div className="row">
@@ -322,7 +270,7 @@ class Form extends Component {
                                                         placeholder="Usuario"
                                                         name="bidding_web_user"
                                                         value={data.bidding_web.user}
-                                                        onChange={e=>this.handleNestedValueChange("bidding_web", "user", e)} />
+                                                        onChange={e=>this.props.handleNestedValueChange("bidding_web", "user", e)} />
                                                 </div>
                                                 <div className="col-xs-12 col-sm-6">
                                                     <input type="text" 
@@ -330,7 +278,7 @@ class Form extends Component {
                                                         placeholder="Contraseña"
                                                         name="bidding_web_password"
                                                         value={data.bidding_web.password}
-                                                        onChange={e=>this.handleNestedValueChange("bidding_web", "password", e)} />
+                                                        onChange={e=>this.props.handleNestedValueChange("bidding_web", "password", e)} />
                                                 </div>
                                             </div>
                                         </div>
@@ -343,7 +291,7 @@ class Form extends Component {
                                 <ReactQuill className="form-control" 
                                     name="observations"
                                     value={data.observations}
-                                    onChange={value=>this.handleQuillChange("observations", value)} ></ReactQuill>
+                                    onChange={value=>this.props.handleQuillChange("observations", value)} ></ReactQuill>
                             </div>  
 
                             <input type="hidden" name="id" value={this.props.data.id} />                         

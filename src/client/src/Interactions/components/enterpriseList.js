@@ -14,7 +14,10 @@ class EnterpriseInteractions extends Component {
 
     static propTypes = {
         interactions: PropTypes.array.isRequired,
+        enterprise: PropTypes.object.isRequired,
         contact: PropTypes.object,
+        getEnterprise: PropTypes.func.isRequired,
+        getContact: PropTypes.func.isRequired,
         fetchEnterpriseInteractionList: PropTypes.func.isRequired,
         onRemoveInteraction: PropTypes.func.isRequired,
         location: PropTypes.object.isRequired,
@@ -72,16 +75,19 @@ class EnterpriseInteractions extends Component {
             // remove contacts column
             this.state.columns = this.state.columns.filter(x=>{ return x.title !== 'Contacto' });
         }
-
-        // fetch data
-        const enterprise_id = this.state.enterprise_id;
-        const contact_id = props.match.params.contact_id;
-        this.props.fetchEnterpriseInteractionList(enterprise_id, contact_id);
     }
 
     componentDidMount() {
+
+        // fetch data
+        const enterprise_id = this.state.enterprise_id;
+        const contact_id = this.props.match.params.contact_id;
+        this.props.fetchEnterpriseInteractionList(enterprise_id, contact_id);
+
+        this.props.getEnterprise(enterprise_id);
+
         if(this.state.contactIdProvided) {
-            this.props.getContact(this.state.enterprise_id, this.props.match.params.contact_id);
+            this.props.getContact(enterprise_id, contact_id);
         }
     }
 
@@ -118,7 +124,7 @@ class EnterpriseInteractions extends Component {
     }
 
     orderByDate(row1, row2) { 
-        return moment(row1.date, 'DD-MM-YYYY') - moment(row2.date, 'DD-MM-YYYY')
+        return moment(row1.date, config.dates.visual_format) - moment(row2.date, config.dates.visual_format)
     }
 
     /**
@@ -141,12 +147,10 @@ class EnterpriseInteractions extends Component {
 
     render() {
      
-        const options = {
-            sizePerPage: config.tables.sizePerPage
-        };
+        const options = config.tables.defaults;
 
         // predefined contact
-        const query = this.state.contact.id ? "contact_id=this.state.contact.id" : '';
+        const query = this.state.contact.id ? "contact_id="+this.state.contact.id : '';
 
         return (
             <div className="row">
@@ -154,30 +158,37 @@ class EnterpriseInteractions extends Component {
 
                     <div className="portlet light bordered">
                         <div className="portlet-title">
-                            <div className="caption">
-                                <i className="icon-social-dribbble font-dark hide"></i>
-                                <span className="caption-subject font-dark bold uppercase">Interacciones con la empresa</span>
-                                <h4>{this.state.contact.fullname}</h4>
+                            <div className="row">
+                                <div className="col-md-6">  
+                                    <div className="caption">
+                                        <i className="icon-social-dribbble font-dark hide"></i>
+                                        <span className="caption-subject font-dark bold uppercase">Interacciones con la empresa</span>
+
+                                        { this.state.contactIdProvided && 
+                                            <div>
+                                                <h3>{this.props.enterprise.legal_name}</h3>
+                                                <h4>{this.state.contact.fullname}</h4>
+                                            </div>
+                                        }
+                                        { !this.state.contactIdProvided && 
+                                            <h4>{this.props.enterprise.legal_name}</h4>
+                                        }
+                                        
+                                    </div>
+                                </div>
+                                <div className="col-md-6 text-right">
+                                    <div className="btn-group">
+                                        <br/><br/>
+                                        <Link to={"/empresas/"+this.state.enterprise_id+"/interacciones/alta?"+query} className='btn sbold green'>                                              
+                                            <i className="fa fa-plus"></i> <span> Alta</span>                                
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="portlet-body">
                             <div className="messages">
                                 <FlashMessages />
-                            </div>
-
-                            <div className="table-toolbar">
-
-                                <div className="row">
-                                    <div className="col-md-6">                                       
-                                    </div>
-                                    <div className="col-md-6 text-right">
-                                        <div className="btn-group">
-                                            <Link to={"/empresas/"+this.state.enterprise_id+"/interacciones/alta?"+query} className='btn sbold green'>                                              
-                                                <i className="fa fa-plus"></i> <span> Alta</span>                                
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
 
                             {
@@ -198,6 +209,7 @@ class EnterpriseInteractions extends Component {
                                                 dataFormat={col.formatter}
                                                 sortFunc={col.sortFunc}
                                                 formatExtraData={col}
+                                                filterFormatted={!_.isNil(col.formatter)}
                                                 >{col.title}</TableHeaderColumn>
                                         })
                                     }

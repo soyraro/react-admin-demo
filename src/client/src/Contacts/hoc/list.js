@@ -1,36 +1,12 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
 import ContactsList from '../components'
-import { fetchContactsList, contactListSuccess, fetchContactStates, addContact, updateContactState, removeContact } from '../actions'
+import { fetchContactsList, contactListSuccess, fetchContactStates, addContact, 
+         updateContactState, replaceContact, transferContact, removeContact } from '../actions'
 import { fetchEnterpriseList } from '../../Enterprises/actions'
 import { fetchSectorList } from '../../Sectors/actions'
 import withFlashMessages from '../../FlashMessages/hoc/with-flash-messages'
-
-function mapForDropdownList(list, params) {
-
-    // merge default with params
-    const objectKeys = Object.assign({
-        id: 'id',
-        label: 'name',
-        value: 'id'        
-    }, params)
-
-    return Object.values(list).map((item)=>{
-
-        const data = {
-            id: item[objectKeys.id],
-            label: item[objectKeys.label],
-            value: item[objectKeys.value]
-        }
-
-        if(typeof objectKeys.extra != 'undefined') {
-            data[objectKeys.extra] = item[objectKeys.extra]; // arbitrary data
-        }
-            
-        return data;
-    })
-}
+import { mapForDropdownList } from '../../Commons/utils/dropdownlists'
 
 const mapStateToProps = (store, ownProps) => {  
     
@@ -64,7 +40,9 @@ const mapDispatchToProps = dispatch => {
         fetchContactStates: () => { return dispatch(fetchContactStates()); },
         fetchEnterpriseContactList: (filters) => { return dispatch(fetchContactsList(filters)); },
         onAddContact: (data) => { dispatch(addContact(data)) },
-        onChangeContactState: (enterprise_id, contact_id, data) => {return dispatch(updateContactState(enterprise_id, contact_id, data)) },
+        onChangeContactState: (enterprise_id, data) => { return dispatch(updateContactState(enterprise_id, data)) },
+        onReplaceContact: (data) => { return dispatch(replaceContact(data)) },
+        onTransferContact: (data) => { return dispatch(transferContact(data)) },
         onRemoveContact: (id) => { return dispatch(removeContact(id)) },
         onContactListSuccess: (list) => { dispatch(contactListSuccess(list)) }
     }

@@ -1,5 +1,9 @@
+const skel = {
+    list: [],
+    selected: {}
+}
 
-function providers (state = {}, action) {
+function providers (state = skel, action) {
 
     switch (action.type) {  
         case 'PROVIDER_LIST_SUCCESS':   
@@ -12,13 +16,24 @@ function providers (state = {}, action) {
             }); 
         case 'PROVIDER_UNSELECTED':
             return Object.assign({}, state, {
-                selected: {}
+                selected: undefined
             }); 
         case 'ADD_PROVIDER':
+            
+            /* In case user reload form page and there's no cache for the list 
+             * to insert this item into */
+            if(typeof state.list === 'undefined') 
+                return state;
+
             return Object.assign({}, state, {
                 list: state.list.concat([action.payload.data])
             });
         case 'SAVE_PROVIDER':
+
+            /* In case user reload form page and there's no cache for the list, 
+             * so it cannot be updated */
+            if(typeof state.list === 'undefined') 
+                return state;
 
             // replace item in list
             const updatedList = state.list.map(item => {

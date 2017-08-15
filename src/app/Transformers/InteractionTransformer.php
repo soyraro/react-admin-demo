@@ -16,13 +16,15 @@ class InteractionTransformer extends TransformerAbstract
      */
     public function transform(Interaction $model)
     {
+        
+        $date_format = config('app.date_format');
 
         return [
             'id' => (int) $model->id,
             'description' => $model->description,
             'contact' => $model->contact,
-            'date' => $model->created_at->format('d-m-Y'),
-            'updated_at' => $model->updated_at->format('d-m-Y'),
+            'date' => $model->created_at->format($date_format),
+            'updated_at' => $model->updated_at->format($date_format),
         ];
     }
 }

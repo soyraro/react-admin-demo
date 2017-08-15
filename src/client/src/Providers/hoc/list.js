@@ -21,7 +21,7 @@ const mapStateToProps = (store, ownProps) => {
 
     return {
         countries,
-        providers: store.providers.list
+        providers: store.providers.list || []
     }
 }
 
@@ -29,9 +29,9 @@ const mapDispatchToProps = dispatch => {
     return {
         fetchCountryList: () => { return dispatch(fetchCountryList()); },
         fetchProviderList: (filters) => { return dispatch(fetchProviderList(filters, true)); },
-        onAddProvider: (data) => { dispatch(addProvider(data)) },
-        onSaveProvider: (data) => { dispatch(saveProvider(data)) },
-        onRemoveProvider: (id) => { dispatch(removeProvider(id)) },
+        onAddProvider: (data) => { return dispatch(addProvider(data)) },
+        onSaveProvider: (data) => { return dispatch(saveProvider(data)) },
+        onRemoveProvider: (id) => { return dispatch(removeProvider(id)) },
         onProviderListSuccess: (list) => { dispatch(providerListSuccess(list)) }
     }
 }

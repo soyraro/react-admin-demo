@@ -5,31 +5,7 @@ import ProvidersForm from '../components/form'
 import { addProvider, saveProvider, getProvider, providerUnselected } from '../actions'
 import { fetchCountryList, fetchProvinceList } from '../../Commons/actions/countries'
 import withFlashMessages from '../../FlashMessages/hoc/with-flash-messages'
-
-function mapForDropdownList(list, params) {
-
-    // merge default with params
-    const objectKeys = Object.assign({
-        id: 'id',
-        label: 'name',
-        value: 'id'        
-    }, params)
-
-    return Object.values(list).map((item)=>{
-
-        const data = {
-            id: item[objectKeys.id],
-            label: item[objectKeys.label],
-            value: item[objectKeys.value]
-        }
-
-        if(typeof objectKeys.extra != 'undefined') {
-            data[objectKeys.extra] = item[objectKeys.extra]; // arbitrary data
-        }
-            
-        return data;
-    })
-}
+import { mapForDropdownList } from '../../Commons/utils/dropdownlists'
 
 const mapStateToProps = (store, ownProps) => {  
 
@@ -57,8 +33,8 @@ const mapDispatchToProps = dispatch => {
         getCountries: () => { return dispatch(fetchCountryList()); },
         getProvinces: (country_id) => { return dispatch(fetchProvinceList(country_id)); },
         unselectProvider: () => { dispatch(providerUnselected()) },
-        onAddProvider: (data) => { dispatch(addProvider(data)) },
-        onSaveProvider: (data) => { dispatch(saveProvider(data)) },
+        onAddProvider: (data) => { return dispatch(addProvider(data)) },
+        onSaveProvider: (data) => { return dispatch(saveProvider(data)) },
     }
 }
 

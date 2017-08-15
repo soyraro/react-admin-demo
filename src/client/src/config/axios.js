@@ -53,7 +53,16 @@ axios.interceptors.response.use((response) => response, (error) => {
             This could be a CORS issue or a dropped internet connection. 
             It is not possible for us to know.*/
         console.log('CORS issue?');
-        swal("Error inesperado", "Hubo un error inesperado. Revise su conexión e intentelo de nuevo, o contacte al administrador", "error");
+        swal({
+            title: "Error inesperado", 
+            text: "Hubo un error inesperado. Revise su conexión e intentelo de nuevo, o contacte al administrador", 
+            type: "error",
+            timer: 3000
+        }).then(
+        function () {},
+        function (dismiss) {
+        // handling the promise rejection
+        }); 
     }
     else if( error.response.status === 401 ) {
         
@@ -62,7 +71,12 @@ axios.interceptors.response.use((response) => response, (error) => {
     else if (error.response.status === 500) {
 
         console.log('Error 500');
-        swal("Error del servidor", "Hubo un error en el servidor, por favor contacte al administrador", "error");
+        swal({
+            title: "Error del servidor", 
+            text: "Hubo un error en el servidor, si el problema persiste por favor contacte al administrador", 
+            type: "error",
+            timer: 3000
+        });
     }
     
     return Promise.reject(error)

@@ -28,4 +28,9 @@ class Sector extends Model
     {
         return $this->belongsToMany('App\Contact');
     }
+    
+    public function tasks()
+    {
+        return $this->hasMany('App\Task');
+    }
 }

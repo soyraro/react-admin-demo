@@ -29,7 +29,7 @@ class ProfileWidget extends Component {
                 </a>
                 <ul className="dropdown-menu dropdown-menu-default">
                     <li>
-                        <Link to="/profile/edit">
+                        <Link to={"/usuarios/"+profile.id+"/editar"}>
                             <i className="icon-user"></i> My Profile </Link>
                     </li>                            
                     <li className="divider"> </li>                            

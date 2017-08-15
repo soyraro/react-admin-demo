@@ -18,14 +18,17 @@ class UserTransformer extends TransformerAbstract
     {
 
         $avatar_uri = config('filesystems.disks.public.url') . '/' . config('app.public_resources.avatars');
-
+       
+        $date_format = config('app.date_format');
+        
         return [
             'id' => (int) $user->id,
             'fullname' => $user->fullname,
             'username' => $user->username,
             'email' => $user->email,
+            'role' => $user->roles[0],
             'image' => $avatar_uri . '/' . $user->image,
-            'updated_at' => $user->updated_at->format('d-m-Y'),
+            'updated_at' => $user->updated_at->format($date_format),
         ];
     }
 }

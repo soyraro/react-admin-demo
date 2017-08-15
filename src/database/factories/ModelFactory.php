@@ -1,5 +1,25 @@
 <?php
 
+use App\Comment;
+use App\Contact;
+use App\Country;
+use App\Currency;
+use App\Email;
+use App\Enterprise;
+use App\Family;
+use App\Group;
+use App\Interaction;
+use App\Product;
+use App\Provider;
+use App\Province;
+use App\Sale;
+use App\Sector;
+use App\Task;
+use App\User;
+use App\Web;
+use Carbon\Carbon;
+use Faker\Generator;
+
 /*
 |--------------------------------------------------------------------------
 | Model Factories
@@ -12,7 +32,7 @@
 */
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
-$factory->define(App\User::class, function (Faker\Generator $faker) {
+$factory->define(User::class, function (Generator $faker) {
     static $password;
 
     return [
@@ -26,9 +46,9 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
 });
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
-$factory->define(App\Enterprise::class, function (Faker\Generator $faker) {
+$factory->define(Enterprise::class, function (Generator $faker) {
 
-    $province = App\Province::all()->random();
+    $province = Province::all()->random();
     
     return [
             'legal_name'=> $faker->company . ' ' . $faker->word,
@@ -45,26 +65,26 @@ $factory->define(App\Enterprise::class, function (Faker\Generator $faker) {
 });
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
-$factory->define(App\Web::class, function (Faker\Generator $faker) {
+$factory->define(Web::class, function (Generator $faker) {
     
     return [
         'type' => rand(0, 1) ? 'invoice' : 'bidding',
         'link'=> $faker->url,
         'user'=> $faker->userName,
         'password'=> $faker->password,
-        'enterprise_id'=> App\Enterprise::all()->random()->id,
+        'enterprise_id'=> Enterprise::all()->random()->id,
     ];
 });
 
-$factory->define(App\Sector::class, function (Faker\Generator $faker) {
+$factory->define(Sector::class, function (Generator $faker) {
 
     return [
-        'enterprise_id'=> App\Enterprise::all()->random()->id,
+        'enterprise_id'=> Enterprise::all()->random()->id,
         'name'=> $faker->words(3, true)
     ];
 });
 
-$factory->define(App\Contact::class, function (Faker\Generator $faker) {
+$factory->define(Contact::class, function (Generator $faker) {
 
     return [
             'fullname'=> $faker->firstName . ' ' . $faker->lastName,
@@ -74,22 +94,22 @@ $factory->define(App\Contact::class, function (Faker\Generator $faker) {
         ];     
 });
 
-$factory->define(App\Interaction::class, function (Faker\Generator $faker, $contact_id = null) {
+$factory->define(Interaction::class, function (Generator $faker, $contact_id = null) {
 
     return [
-            'contact_id' => $contact_id || App\Contact::all()->random()->id,
+            'contact_id' => $contact_id || Contact::all()->random()->id,
             'description'=> $faker->sentence(12),
-            'created_at'=> Carbon\Carbon::now()
+            'created_at'=> Carbon::now()
         ];
 });
 
-$factory->define(App\Provider::class, function (Faker\Generator $faker) {
+$factory->define(Provider::class, function (Generator $faker) {
 
     return [
             'legal_name'=> $faker->company,
             'cuit'=> $faker->numerify('30-########-#'),
-            'country_id'=> App\Country::all()->random()->id,
-            'province_id'=> App\Province::all()->random()->id,
+            'country_id'=> Country::all()->random()->id,
+            'province_id'=> Province::all()->random()->id,
             'town'=> $faker->city,
             'address'=> $faker->address,
             'zipcode'=> $faker->postcode,
@@ -100,15 +120,15 @@ $factory->define(App\Provider::class, function (Faker\Generator $faker) {
         ];
 });
 
-$factory->define(App\Email::class, function (Faker\Generator $faker, $contact_id = null) {
+$factory->define(Email::class, function (Generator $faker, $contact_id = null) {
 
     return [
-            'contact_id' => $contact_id || App\Contact::all()->random()->id,
+            'contact_id' => $contact_id || Contact::all()->random()->id,
             'email'=> $faker->email
         ];
 });
 
-$factory->define(App\Country::class, function (Faker\Generator $faker) {
+$factory->define(Country::class, function (Generator $faker) {
 
     return [
             'name'=> $faker->country,
@@ -116,46 +136,118 @@ $factory->define(App\Country::class, function (Faker\Generator $faker) {
         ];
 });
 
-$factory->define(App\Province::class, function (Faker\Generator $faker) {
+$factory->define(Province::class, function (Generator $faker) {
 
     return [
             'name'=> $faker->state,
-            'country_id'=> App\Country::all()->random()->id,
+            'country_id'=> Country::all()->random()->id,
         ];
 });
 
-$factory->define(App\Currency::class, function (Faker\Generator $faker) {
+$factory->define(Currency::class, function (Generator $faker) {
 
     return [
             'name'=> rand(0, 1) ? '$AR' : 'U$D'
         ];
 });
 
-$factory->define(App\Family::class, function (Faker\Generator $faker) {
+$factory->define(Family::class, function (Generator $faker) {
 
     return [
             'name'=> $faker->word,
         ];
 });
 
-$factory->define(App\Group::class, function (Faker\Generator $faker) {
+$factory->define(Group::class, function (Generator $faker) {
 
     return [
             'name'=> $faker->word,
-            'family_id'=> App\Family::all()->random()->id
+            'family_id'=> Family::all()->random()->id
         ];
 });
 
-$factory->define(App\Product::class, function (Faker\Generator $faker) {
+$factory->define(Product::class, function (Generator $faker) {
 
     return [
             'type'=> $faker->randomElement(['producto', 'repuesto']),
             'code'=> $faker->uuid,
             'name'=> $faker->words(3, true),
-            'provider_id'=> App\Provider::all()->random()->id,
-            'family_id'=> App\Family::all()->random()->id,
-            'group_id'=> App\Group::all()->random()->id,
+            'provider_id'=> Provider::all()->random()->id,
+            'family_id'=> Family::all()->random()->id,
+            'group_id'=> Group::all()->random()->id,
             'price'=> $faker->randomFloat(2, 200, 9000),
-            'currency_id'=> App\Currency::all()->random()->id
+            'currency_id'=> Currency::all()->random()->id
+        ];
+});
+
+$factory->define(Task::class, function (Generator $faker) {
+ 
+    $status = ['pendiente', 'realizada', 'finalizada'];
+    
+    $enterprise = Enterprise::all()->random();
+    $sector = Sector::where('enterprise_id', $enterprise->id)->get()->random();
+    $contact = $sector->contacts()->first(); 
+        
+    $date = Carbon::now();
+    
+    return [
+        'author_id'=> User::all()->random()->id,
+        'receiver_id'=> User::all()->random()->id,
+        'enterprise_id'=> $enterprise->id,
+        'sector_id'=> $sector->id,
+        'contact_id'=> $contact->id,
+        'priority'=> rand(0, 1) ? 'normal' : 'urgente',
+        'status'=> $status[rand(0, 2)],
+        'description'=> $faker->text(200),
+        'created_at'=> $date->subDays(rand(1, 40))
+    ];
+});
+
+$factory->define(Comment::class, function (Generator $faker) {
+
+    return [
+            'user_id'=> User::all()->random()->id,
+            'commentable_id'=> Task::all()->random()->id,
+            'commentable_type'=> 'App\Task',
+            'content'=> $faker->text(200)
+        ];
+});
+
+$factory->define(Sale::class, function (Generator $faker) {
+ 
+    $contact_mean = ['email', 'web', 'telefono', 'otro'];
+    
+    $enterprise = Enterprise::all()->random();
+    $contact = $enterprise->contacts()->first(); 
+        
+    $date = Carbon::now();
+    
+    return [        
+        'sale_status_id'=> \App\SaleStatuses::all()->random()->id,
+        'enterprise_id'=> $enterprise->id,
+        'contact_id'=> $contact->id,
+        'contact_mean'=> $contact_mean[rand(0, 3)],
+        'observations'=> $faker->text(200),
+        'created_at'=> $date->subDays(rand(1, 40))
+    ];
+});
+
+$factory->define(\App\Quotation::class, function (Generator $faker) {
+
+    return [
+            'sale_id'=> Sale::all()->random()->id,
+            'number'=> $faker->numerify('#####'),
+            'currency_id'=> Currency::all()->random()->id,
+            'total_price'=> $faker->randomFloat(2, 200, 9000)
+        ];
+});
+
+$factory->define(\App\Shipment::class, function (Generator $faker) {
+
+    return [
+            'shipment_type_id'=> \App\ShipmentType::all()->random()->id,
+            'fob'=> $faker->randomFloat(2, 200, 9000),
+            'volume'=> $faker->numerify('#####'),
+            'weight'=> $faker->numerify('#####')
         ];
 });

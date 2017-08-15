@@ -16,6 +16,10 @@ class Product extends Model
      */
     protected $dates = ['deleted_at'];
     
+    protected $fillable = ['type', 'code', 'name', 'price', 'provider_id', 'family_id', 'group_id', 'currency_id'];
+     
+     protected $hidden = ['deleted_at'];
+    
     function currency()
     {
         return $this->belongsTo('App\Currency');
@@ -39,5 +43,30 @@ class Product extends Model
     function sales()
     {
         return $this->belongsToMany('App\Sale')->withPivot('quantity');
+    }
+    
+    function quotations() 
+    {
+        return $this->belongsToMany('App\Quotation')
+            ->withPivot('quantity', 'currency_id', 'export_expenditure', 'fob_price', 'sale_price');
+    }
+    
+    /**
+     * Used to merge pivot table data with product data when querying a quotation
+     * 
+     * @return type
+     */
+    public function toArray()
+    { 
+        $attributes = $this->attributesToArray();
+        $attributes = array_merge($attributes, $this->relationsToArray());
+     
+        // Detect if there is a quotation id and return pivot data merged w/ product data
+        if (isset($attributes['pivot']['quotation_id'])) { 
+            $attributes = array_merge($attributes, $attributes['pivot']);
+            unset($attributes['pivot']);
+        }
+        
+        return $attributes;
     }
 }
