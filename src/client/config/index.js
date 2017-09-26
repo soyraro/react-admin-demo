@@ -9,11 +9,13 @@ if(process.env.NODE_ENV === 'production') {
   compiler_public_path = '/'
 
 } else {
-  
+
   server_host = 'localhost'
   server_port = 3002
   compiler_public_path = 'http://' + server_host + ':' + server_port + '/dist/'
 }
+
+compiler_public_path = '/'
 
 debug('ENV:' + process.env.NODE_ENV)
 debug('HOST: ' + server_host)

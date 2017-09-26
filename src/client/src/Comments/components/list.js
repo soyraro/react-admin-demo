@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Comment from './comment'
+import CommentForm from './form'
 
 class List extends Component {
-    
+
     static propTypes = {
         list: PropTypes.array.isRequired,
         id: PropTypes.number.isRequired
@@ -26,7 +27,7 @@ class List extends Component {
     render() {
 
         const list = this.props.list;
-    
+
         return (
             <div className="row">
                 <div className="col-xs-12">
@@ -36,18 +37,19 @@ class List extends Component {
                                 <i className="fa fa-comment-o font-green"></i>
                                 <span className="caption-subject bold font-green uppercase"> Comentarios</span>
                                 <span className="caption-helper"> ...</span>
-                            </div>                            
+                            </div>
                         </div>
+                        <CommentForm parent_id={this.props.id} />
                         <div className="portlet-body">
                             <div className="timeline">
-                                
-                                { list.length > 0 && 
+
+                                { list.length > 0 &&
                                     list.map(data=>{
-                                        return <Comment data={data} 
+                                        return <Comment data={data}
                                                 key={data.id}
-                                                onEdit={_=>{this.onEdit(data.id)}} 
+                                                onEdit={_=>{this.onEdit(data.id)}}
                                                 onDelete={_=>this.onDelete(data.id)} />
-                                    })                  
+                                    })
                                 }
                             </div>
                         </div>

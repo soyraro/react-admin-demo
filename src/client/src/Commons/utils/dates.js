@@ -1,7 +1,7 @@
 import moment from 'moment'
 import config from '../../config/app'
 
-export function formatDateVisualy(date) {
+export function formatDateVisually(date) {
     return moment(date).format(config.dates.visual_format)
 }
 

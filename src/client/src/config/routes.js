@@ -70,8 +70,6 @@ const Routes = (
         <Route exact path="/tareas/alta" component={TasksForm} />
         <Route exact path="/tareas/:id/edicion" component={TasksForm} />
         <Route exact path="/tareas/:id/detalle" component={TaskDetails} />
-
-        <Route exact path="/numeracion" component={WorkInProgress} />
     </Switch>    
 )
 

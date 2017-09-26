@@ -18,7 +18,7 @@ class Product extends Model
     
     protected $fillable = ['type', 'code', 'name', 'price', 'provider_id', 'family_id', 'group_id', 'currency_id'];
      
-     protected $hidden = ['deleted_at'];
+    protected $hidden = ['deleted_at'];
     
     function currency()
     {
@@ -30,6 +30,10 @@ class Product extends Model
         return $this->belongsTo('App\Family');
     }
     
+    /**
+     * A group is just a category
+     * @return type
+     */
     function group()
     {
         return $this->belongsTo('App\Group');
@@ -44,11 +48,10 @@ class Product extends Model
     {
         return $this->belongsToMany('App\Sale')->withPivot('quantity');
     }
-    
-    function quotations() 
+  
+    function quotationGroup() 
     {
-        return $this->belongsToMany('App\Quotation')
-            ->withPivot('quantity', 'currency_id', 'export_expenditure', 'fob_price', 'sale_price');
+        return $this->belongsTo('App\QuotationGroup');
     }
     
     /**

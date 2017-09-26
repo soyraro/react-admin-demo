@@ -42,5 +42,23 @@ return [
             'visibility' => 'public',
         ],
     ],
+    
+     /*
+    |--------------------------------------------------------------------------
+    | Local storage folders
+    |--------------------------------------------------------------------------
+    |
+    | Here you define the laravel storage folders path
+    |
+    */
+    'resources' => [   
+        'xlsx-templates' => 'assets/xlsx-templates'
+       
+    ],     
+    'storage' => [        
+        'public' => [ 
+            'xlsx-files' => 'quotation/xlsx-files'
+        ]
+    ]
 
 ];

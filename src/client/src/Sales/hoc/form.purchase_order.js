@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import PurchaseOrderForm from '../components/form.purchase_order'
+import PurchaseOrderForm from '../components/purchase_order/form'
 import { fetchCurrencies } from 'Commons/actions/currencies'
 import { fetchProductList } from 'Products/actions'
 import withFlashMessages from 'FlashMessages/hoc/with-flash-messages'

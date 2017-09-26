@@ -4,6 +4,11 @@ import FlashMessages from '../../FlashMessages'
 import Select from 'react-select'
 import _ from 'lodash'
 
+import {
+  InputPassword,
+  Input
+} from 'Commons/components/form'
+
 class Form extends Component {
 
     static defaultProps = {
@@ -21,9 +26,9 @@ class Form extends Component {
     }
 
     constructor(props) {
-        
+
         super(props)
-        
+
         this.state = {...this.props.data, ...Form.defaultProps};
 
         // events
@@ -42,8 +47,8 @@ class Form extends Component {
 
     /**
      * Form data received for edition
-     * 
-     * @param {obj} nextProps 
+     *
+     * @param {obj} nextProps
      */
     componentWillReceiveProps(nextProps) {
         this.setState(nextProps.data)
@@ -51,7 +56,7 @@ class Form extends Component {
 
     /**
      * Handle form interactions
-     * @param {*} event 
+     * @param {*} event
      */
     handleInputChange(event) {
 
@@ -65,170 +70,135 @@ class Form extends Component {
     }
 
     /**
-     * Handle dropdowns changes 
+     * Handle dropdowns changes
      * @param {*} field name
-     * @param {*} value 
+     * @param {*} value
      */
     handleOptionChange(field, value) {
-      
-        this.setState({ 
-            [field]: value 
+
+        this.setState({
+            [field]: value
         });
     }
 
     save() {
-        const data = this.state;  
-        this.props.onSaveUser(data);  
+        const data = this.state;
+        this.props.onSaveUser(data);
     }
 
     cancel() {
-        this.props.onCancel();  
+        this.props.onCancel();
     }
 
     render() {
-       
+      const {errors} = this.props
         return (
+          <div className="portlet light bordered">
+              <div className="portlet-title">
+                  <div className="caption font-red-sunglo">
+                      <i className="fa fa-circles font-red-sunglo"></i>
+                      <span className="caption-subject bold uppercase">
+                          { this.props.data.id ? ' Edición' : ' Alta usuario' }</span>
+                  </div>
+              </div>
+              <div className="portlet-body form">
 
-            <div className="portlet light bordered">
-                <div className="portlet-title">
-                    <div className="caption font-red-sunglo">
-                        <i className="fa fa-circles font-red-sunglo"></i>
-                        <span className="caption-subject bold uppercase">
-                            { this.props.data.id ? ' Edición' : ' Alta usuario' }</span>
-                    </div>                    
-                </div>
-                <div className="portlet-body form">
+                  <div className="messages">
+                      <FlashMessages target="form" />
+                  </div>
 
-                    <div className="messages">
-                        <FlashMessages target="form" />
+                  <form>
+                    <div className="form-body">
+
+                            <Input 
+                                classnames={`form-group ${errors.hasError('fullname')}`}
+                                label="Nombre completo"
+                                name="fullname"
+                                value={this.state.fullname}
+                                icon="fa fa-user"
+                                handle={this.handleInputChange}
+                                errorMessage={errors.messageContainer(errors['fullname'])}
+                            />
+
+                        <div className="row">
+
+                            <Input 
+                                classnames={`col-xs-12 col-sm-6 ${errors.hasError('username')}`}
+                                label="Nombre de usuario"
+                                name="username"
+                                value={this.state.username}
+                                icon="fa fa-user"
+                                handle={this.handleInputChange}
+                                errorMessage={errors.messageContainer(errors['username'])}
+                            />
+
+                            <div className="col-xs-12 col-sm-6">
+                                <div className="form-group">
+                                    <label>Rol</label>
+                                    <div className="input-group">
+                                         <Select
+                                            name="role"
+                                            placeholder="Seleccione..."
+                                            value={this.state.role.id}
+                                            clearable={false}
+                                            onChange={obj=>{this.handleOptionChange("role", obj)}}
+                                            options={this.props.roles}
+                                        />
+                                        <span className="input-group-addon">
+                                            <i className="fa fa-user"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Input
+                          classnames={`${errors.hasError('email')}`}
+                          label="Email"
+                          name="email"
+                          placeholder="Email"
+                          value={this.state.email}
+                          handle={this.handleInputChange}
+                          icon="fa fa-envelope"
+                          errorMessage={errors.messageContainer(errors['email'])}
+                        />
+
+                        { this.props.data.id &&
+                            <div className="note note-info">
+                                <h4 className="block">Opcional</h4>
+                                <p>Al dejar vacios los siguientes campos no se sobreescribirá la <b>contraseña</b> actual</p>
+                            </div>
+                        }
+
+                        <InputPassword
+                          classnames={`${errors.hasError('password')}`}
+                          label="Contraseña"
+                          name="password"
+                          placeholder="Contraseña"
+                          value={this.state.password}
+                          handle={this.handleInputChange}
+                          icon="fa fa-key"
+                          errorMessage={errors.messageContainer(errors['password'])}
+                        />
+
+                        <InputPassword
+                          label="Confirmar Contraseña"
+                          name="password_confirmation"
+                          placeholder="Contraseña"
+                          value={this.state.password_confirmation}
+                          handle={this.handleInputChange}
+                          icon="fa fa-key"
+                        />
+
+                        <input type="hidden" name="id" value={this.state.id} />
                     </div>
-
-                    <form role="form" autoComplete="off">
-                        <div className="form-body">
-
-                            <div className="form-group">
-                                <label>Nombre completo</label>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        name="fullname"
-                                        className="form-control"
-                                        placeholder="Nombre completo"
-                                        onChange={this.handleInputChange}
-                                        value={this.state.fullname}
-                                        />
-                                    <span className="input-group-addon">
-                                        <i className="fa fa-user"></i>
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="row">
-                                <div className="col-xs-12 col-sm-6">
-                                    <div className="form-group">
-                                        <label>Nombre de usuario</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="username"                                        
-                                                onChange={this.handleInputChange}
-                                                className="form-control"
-                                                placeholder="Nombre de usuario"
-                                                value={this.state.username}
-                                                />
-                                            <span className="input-group-addon">
-                                                <i className="fa fa-user"></i>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="col-xs-12 col-sm-6">
-                                    <div className="form-group">
-                                        <label>Rol</label>
-                                        <div className="input-group">
-                                             <Select 
-                                                name="role" 
-                                                placeholder="Seleccione..."
-                                                value={this.state.role.id} 
-                                                clearable={false}
-                                                onChange={obj=>{this.handleOptionChange("role", obj)}} 
-                                                options={this.props.roles}
-                                            />
-                                            <span className="input-group-addon">
-                                                <i className="fa fa-user"></i>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Email</label>
-                                <div className="input-group right">   
-                                    <input type="text" 
-                                        className="form-control" 
-                                        name="email"                                        
-                                        onChange={this.handleInputChange}
-                                        placeholder="Email"
-                                        value={this.state.email}
-                                        />
-                                    <span className="input-group-addon">                                
-                                        <i className="fa fa-envelope"></i>
-                                    </span>
-                                </div>
-                            </div>
-
-                            { this.props.data.id &&
-                                <div className="note note-info">
-                                    <h4 className="block">Opcional</h4>
-                                    <p>Al dejar vacios los siguientes campos no se sobreescribirá la <b>contraseña</b> actual</p>
-                                </div>
-                            }
-                            
-                            <div className="form-group">
-                                <label>Contraseña</label>
-                                <div className="input-group">
-                                    <input autoComplete="off"
-                                        type="password"
-                                        name="password"                                        
-                                        onChange={this.handleInputChange}
-                                        className="form-control"
-                                        placeholder="Contraseña"
-                                        value={this.state.password}
-                                        />
-                                    <span className="input-group-addon">
-                                        <i className="fa fa-key"></i>
-                                    </span>
-                                </div>
-                            </div>  
-
-                            <div className="form-group">
-                                <label>Confirmar Contraseña</label>
-                                <div className="input-group">
-                                    <input
-                                        type="password"
-                                        name="password_confirmation"                                        
-                                        onChange={this.handleInputChange}
-                                        className="form-control"
-                                        placeholder="Contraseña"
-                                        value={this.state.password_confirmation}
-                                        />
-                                    <span className="input-group-addon">
-                                        <i className="fa fa-key"></i>
-                                    </span>
-                                </div>
-                            </div>  
-
-                            <input type="hidden" name="id" value={this.state.id} />                                            
-                        </div>
-                        <div className="form-actions">
-                            <button type="button" className="btn blue" onClick={this.save}>Guardar</button>
-                            <button type="button" className="btn default" onClick={this.cancel}>Cancelar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    <div className="form-actions">
+                        <button type="button" className="btn blue" onClick={this.save}>Guardar</button>
+                        <button type="button" className="btn default" onClick={this.cancel}>Cancelar</button>
+                    </div>
+                  </form>
+              </div>
+          </div>
         );
     }
 }

@@ -26,13 +26,11 @@ class Comment extends Component {
                         <div className="timeline-body-head-caption">
                             <a href="javascript:;" className="timeline-body-title font-blue-madison"> { data.author.fullname } </a>
                             <span className="timeline-body-time font-grey-cascade">{ date }hs</span>
-                        </div>                      
-                    </div>   
+                        </div>
+                    </div>
                     <div className="timeline-body-content">
-                        <span className="font-grey-cascade">
-                            { data.content }
-                        </span>
-                    </div>              
+                        <span className="font-grey-cascade" dangerouslySetInnerHTML={{__html: data.content}}></span>
+                    </div>
                 </div>
             </div>
         )

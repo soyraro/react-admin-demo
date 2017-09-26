@@ -7,7 +7,12 @@ import DayPickerInput from 'react-day-picker/DayPickerInput'
 import config from '../../config/app.js'
 import moment from 'moment'
 import 'moment/locale/es'
-import { formatDateVisualy, formatDateForStorage } from '../../Commons/utils/dates'
+import { formatDateVisually, formatDateForStorage } from 'Commons/utils/dates'
+import {
+    Input,
+    TextArea,
+    DropdownList
+} from 'Commons/components/form'
 import FlashMessages from '../../FlashMessages'
 
 class Form extends Component {
@@ -18,18 +23,18 @@ class Form extends Component {
         current_user: PropTypes.object.isRequired,
         users: PropTypes.array.isRequired,
         enterprises: PropTypes.array.isRequired,
-        sectors: PropTypes.array.isRequired,  
+        sectors: PropTypes.array.isRequired,
         contacts: PropTypes.array.isRequired,
-        statuses: PropTypes.array.isRequired,  
-        save: PropTypes.func.isRequired,  
-        cancel: PropTypes.func.isRequired,  
+        statuses: PropTypes.array.isRequired,
+        save: PropTypes.func.isRequired,
+        cancel: PropTypes.func.isRequired,
     }
 
     /**
      * Pre-declaring nested fields
      */
     static defaultProps = {
-        data: { 
+        data: {
             receiver: {},
             sector: {},
             status: {}
@@ -39,7 +44,7 @@ class Form extends Component {
     constructor(props) {
 
         super(props);
-        
+
         this.state = {
             ...props.data,
             ...Form.defaultProps.data
@@ -50,11 +55,11 @@ class Form extends Component {
     }
 
     componentWillReceiveProps(newProps) {
-      
+
         let newState = {
             isEdition: newProps.data.id ? true : false
         }
-           
+
         this.setState({
             ...newProps.data,
             ...newState
@@ -65,21 +70,22 @@ class Form extends Component {
 
         const data = {
             ...this.state
-        };       
+        };
 
         this.props.save(data);
     }
 
     cancel() {
-        this.props.cancel();  
+        this.props.cancel();
     }
 
     render() {
 
         const data = this.state;
-       
+        const {errors} = this.props;
+
         // just view, don't edit
-        const justView = !this.isEdition || (this.props.current_user.id == this.state.author_id); 
+        const justView = !this.isEdition || (this.props.current_user.id == this.state.author_id);
 
         return (
 
@@ -96,14 +102,14 @@ class Form extends Component {
                             <div className="caption font-red-sunglo">
                                 <i className="fa fa-circles font-red-sunglo"></i>
                                 <span className="caption-subject bold uppercase">
-                                    
+
                                    { this.state.isEdition ? ' Edición' : ' Nueva tarea' }</span>
-                            </div> 
-                        
+                            </div>
+
                             { data.created_at &&
                                 <div className="col-xs-12 col-sm-12 col-md-3">
                                     <h4><small>Creada el</small> {data.created_at}</h4>
-                                </div>    
+                                </div>
                             }
                         </div>
 
@@ -120,22 +126,19 @@ class Form extends Component {
                         <div className="form-body">
 
                             <div className="row">
-                               
-                                <div className="col-xs-12 col-sm-3 col-md-2">
-                                    <div className="form-group">
-                                        <label>Dirigido a</label>
-                                        { this.props.users.length > 0 && data.receiver &&
-                                            <Select
-                                                placeholder="Seleccione..."
-                                                name="receiver"                                             
-                                                value={data.receiver.id}
-                                                options={this.props.users}
-                                                clearable={false}
-                                                onChange={obj=>{this.props.handleOptionChange("receiver", obj)}}
-                                                />
-                                        }    
-                                    </div>
-                                </div>  
+
+                                { this.props.users.length > 0 && data.receiver &&
+                                    <DropdownList
+                                        classnames="col-xs-12 col-sm-3 col-md-3"
+                                        name="receiver"
+                                        label="Dirigida a"
+                                        value={data.receiver.id}
+                                        list={this.props.users}
+                                        clearable={false}
+                                        handle={this.props.handleOptionChange}
+                                        errorMessage={errors.messageContainer(errors['receiver_id'])}
+                                        />
+                                }  
 
                                 <div className="col-xs-12 col-sm-4 col-md-2">
                                     <div className="form-group">
@@ -143,24 +146,24 @@ class Form extends Component {
                                         <div className="mt-radio-inline">
                                             <label className="mt-radio">
                                                 Normal
-                                                <input type="radio" value="normal" name="priority" 
-                                                    checked={data.priority == 'normal'} 
+                                                <input type="radio" value="normal" name="priority"
+                                                    checked={data.priority == 'normal'}
                                                     onChange={e=>{this.props.handleOptionChange("priority", e.target.value)}} />
                                                 <span></span>
                                             </label>
                                             <label className="mt-radio">
                                                 Urgente
-                                                <input type="radio" value="urgente" name="priority" 
-                                                    checked={data.priority == 'urgente'} 
+                                                <input type="radio" value="urgente" name="priority"
+                                                    checked={data.priority == 'urgente'}
                                                     onChange={e=>{this.props.handleOptionChange("priority", e.target.value)}} />
                                                 <span></span>
                                             </label>
                                         </div>
-                                    </div>  
-                                </div> 
+                                    </div>
+                                </div>
 
 
-                                <div className="col-xs-12 col-sm-1 col-md-2"></div>
+                                <div className="col-xs-12 col-sm-1 col-md-4"></div>
 
                                 <div className="col-xs-12 col-sm-4 col-md-2">
                                     <div className="form-group">
@@ -174,34 +177,34 @@ class Form extends Component {
                                                 clearable={false}
                                                 onChange={obj=>{this.props.handleOptionChange("status", obj)}}
                                                 />
-                                        } 
+                                        }
                                     </div>
                                 </div>
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2">
+                                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-3">
                                     <div className="form-group">
                                         <div className="mt-radio-inline">
                                             <label className="mt-radio">
                                                 Cliente
-                                                <input type="radio" value="cliente" name="client_type" 
-                                                    checked={data.client_type == 'cliente'} 
+                                                <input type="radio" value="cliente" name="client_type"
+                                                    checked={data.client_type == 'cliente'}
                                                     onChange={e=>{this.props.handleClienTypeChange(e.target.value)}} />
                                                 <span></span>
                                             </label>
                                             <label className="mt-radio">
                                                 Otros clientes
-                                                <input type="radio" value="otros_clientes" name="client_type" 
-                                                    checked={data.client_type == 'otros_clientes'} 
+                                                <input type="radio" value="otros_clientes" name="client_type"
+                                                    checked={data.client_type == 'otros_clientes'}
                                                     onChange={e=>{this.props.handleClienTypeChange(e.target.value)}} />
                                                 <span></span>
                                             </label>
                                         </div>
-                                    </div>  
-                                </div>  
+                                    </div>
+                                </div>
 
-                                <div className="col-xs-12 col-sm-6 col-md-5 col-lg-3">
+                                <div className="col-xs-12 col-sm-6 col-md-5 col-lg-6">
                                     <div className="form-group">
                                         <label>Empresa</label>
                                         { this.props.enterprises.length > 0 && data.enterprise &&
@@ -213,7 +216,7 @@ class Form extends Component {
                                                 clearable={false}
                                                 onChange={obj=>{this.props.handleEnterpriseChange(obj)}}
                                                 />
-                                        } 
+                                        }
                                     </div>
                                 </div>
 
@@ -229,13 +232,13 @@ class Form extends Component {
                                                 options={this.props.sectors}
                                                 onChange={obj=>{this.props.handleSectorChange(obj)}}
                                                 />
-                                        }    
+                                        }
                                     </div>
                                 </div>
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-6 col-md-5 col-lg-3">
+                                <div className="col-xs-12 col-sm-6 col-md-5 col-lg-4">
                                     <div className="form-group">
                                         <label>Contacto</label>
                                         { this.props.contacts && data.contact &&
@@ -247,39 +250,41 @@ class Form extends Component {
                                                 options={this.props.contacts}
                                                 onChange={obj=>{this.props.handleContactChange(obj)}}
                                                 />
-                                        }   
+                                        }
                                     </div>
                                 </div>
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-8">
-                                        { justView &&
-                                            <div className="form-group">
-                                                <label>Descripción</label>
-                                                <ReactQuill className="form-control" 
-                                                    name="description" value={ this.state.description }
-                                                    onChange={value=>this.props.handleQuillChange("description", value)}
-                                                    ></ReactQuill>
-                                            </div>  
-                                        }
-
-                                        { !justView &&
-                                            <div className="portlet light bg-inverse">
-                                                <div className="portlet-title">
-                                                    <div className="caption">
-                                                        <i className="icon-paper-plane font-yellow-casablanca"></i>
-                                                        <span className="caption-subject bold font-yellow-casablanca uppercase"> Descripción</span>
-                                                        <span className="caption-helper"></span>
-                                                    </div>                                               
-                                                </div>
-                                                <div className="portlet-body">
-                                                    <h4></h4>
-                                                    <p> {this.state.description} </p>
+                        
+                                { justView &&
+                                    <TextArea 
+                                        name="description"
+                                        classnames="col-xs-12 col-sm-12 col-md-12 col-lg-12"
+                                        label= "Descripción"
+                                        content={ this.state.description ? this.state.description : '' }
+                                        handle={(field, value)=>this.props.handleQuillChange(field, value)}
+                                        errorMessage={errors.messageContainer(errors['description'])}
+                                    />
+                                }
+                                        
+                                { !justView &&
+                                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-8">
+                                        <div className="portlet light bg-inverse">
+                                            <div className="portlet-title">
+                                                <div className="caption">
+                                                    <i className="icon-paper-plane font-yellow-casablanca"></i>
+                                                    <span className="caption-subject bold font-yellow-casablanca uppercase"> Descripción</span>
+                                                    <span className="caption-helper"></span>
                                                 </div>
                                             </div>
-                                        }
-                                </div>
+                                            <div className="portlet-body">
+                                                <h4></h4>
+                                                <p> {this.state.description} </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             </div>
 
                             { this.props.isEdition &&
@@ -290,7 +295,7 @@ class Form extends Component {
                                 </div>
                             }
 
-                            <input type="hidden" name="id" value={this.props.data.id} />                         
+                            <input type="hidden" name="id" value={this.props.data.id} />
                         </div>
                         <div className="form-actions">
                             <button type="button" className="btn blue" onClick={this.save}>Guardar</button>

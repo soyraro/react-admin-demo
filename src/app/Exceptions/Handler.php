@@ -12,6 +12,7 @@ use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\Response as Response2;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use function redirect;
@@ -72,6 +73,10 @@ class Handler extends ExceptionHandler
                 case ($e instanceof HttpException):
                     Log::error('HttpException in ' . $e->getFile() . ' line: ' . $e->getLine() . ' > ' . $e->getMessage());
                     return response()->json(['error' => Response2::$statusTexts[$e->getStatusCode()]], $e->getStatusCode());
+                    break;
+                case ($e instanceof FileNotFoundException):
+                    return response()->json([ 
+                        'message' => 'Requested file does not exist on our server!' ], 500);
                     break;
                 default:
                     Log::error($e);

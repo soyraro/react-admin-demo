@@ -19,16 +19,11 @@ export default {
         }, {
             groupTitle: "Ventas",
             icon: "fa fa-money",
-            route: "/ventas",
-            items: [{
-                title: "Numeración",
-                icon: "fa fa-tasks",
-                route: "/numeracion",
-            }]
+            route: "/ventas"
         }, {
             groupTitle: "Tareas",
             icon: "fa fa-tasks",
-            route: "/tareas"
+            route: "/tareas",
         }, {
             groupTitle: "Usuarios",
             icon: "icon-user",

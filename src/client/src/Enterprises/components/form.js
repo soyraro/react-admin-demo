@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
 import queryString from 'query-string'
 import View from './form.view'
+import Validate from 'Commons/hoc/validate'
 
 class Form extends Component {
 
@@ -55,7 +56,8 @@ class Form extends Component {
         super(props);
 
         this.state = Object.assign({}, Form.defaultProps, props, {
-            isEdition: props.match.params.id ? true : false     
+            isEdition: props.match.params.id ? true : false,
+            pristine: true     
         });
       
         // events
@@ -95,6 +97,8 @@ class Form extends Component {
             // set predefined country
             const country = (self.state.isEdition) ? self.state.data.country : self.props.countries[1];
             self.handleCountryChange(country, self.state.data.province);
+
+            this.setState({pristine: false});
         });
     }
 
@@ -105,18 +109,15 @@ class Form extends Component {
      */
     componentWillReceiveProps(nextProps) {
 
-        const data = {
-            ...Form.defaultProps.data,
-            ...nextProps.data
+        // pristine
+        if(this.state.pristine) {
+            this.setState({
+                data: {
+                    ...Form.defaultProps.data,
+                    ...nextProps.data
+                }
+            });
         }
-       
-        let newState = {
-            data,
-            countries: nextProps.countries,
-            provinces: nextProps.provinces
-        };  
-
-        this.setState(newState);
     }
 
     handleCountryChange(country, province = this.props.provinces[1]) {
@@ -196,9 +197,15 @@ class Form extends Component {
         this.setState({ data });
     }
 
-    save(data) {
+    showErrorMessage = () => {
+      this.props.flashError({
+          text: "Hubo un error al guardar los datos"
+      })
+    }
 
-         // will redirect to filtered list after saving
+    save(data) {
+        
+        // will redirect to filtered list after saving
         const redirection = {
             pathname: '/empresas',
             search: queryString.stringify({
@@ -210,28 +217,20 @@ class Form extends Component {
         const self = this;
    
         if(!data.id) {
-            this.props.onAddEnterprise(data).then(_=>{
+            return this.props.onAddEnterprise(data).then(_=>{
                 self.props.flashSuccess({
                     text: "Se ha guardado la empresa"
                 });
                 self.clear();
                 self.props.history.push(redirection);
-            }).catch(_=>{
-                self.props.flashError({
-                    text: "Hubo un error al guardar los datos"
-                })
             });  
         } else {
-            this.props.onSaveEnterprise(data).then(_=>{
+            return this.props.onSaveEnterprise(data).then(_=>{
                 self.props.flashSuccess({
                     text: "Se ha guardado los datos"
                 });
                 self.clear();
                 self.props.history.push(redirection);
-            }).catch(_=>{
-                self.props.flashError({
-                    text: "Hubo un error al guardar los datos"
-                })
             });    
         }        
     }
@@ -251,20 +250,26 @@ class Form extends Component {
     }
 
     render() {
-       
+     
         return ( 
-            <View data={this.state.data} 
-                isEdition={this.state.isEdition}
-                countries={this.props.countries}
-                provinces={this.props.provinces}
-                handleCountryChange={this.handleCountryChange}
-                handleInputChange={this.handleInputChange}
-                handleQuillChange={this.handleQuillChange}
-                handleOptionChange={this.handleOptionChange}
-                handleNestedValueChange={this.handleNestedValueChange}
-                save={this.save}
-                cancel={this.cancel}
-            /> 
+            <Validate onSubmit={this.save} errorCallback={this.showErrorMessage}>
+                {(errors, onSubmit) => {
+                  return (
+                    <View data={this.state.data} 
+                      isEdition={this.state.isEdition}
+                      countries={this.props.countries}
+                      provinces={this.props.provinces}
+                      handleCountryChange={this.handleCountryChange}
+                      handleInputChange={this.handleInputChange}
+                      handleQuillChange={this.handleQuillChange}
+                      handleOptionChange={this.handleOptionChange}
+                      handleNestedValueChange={this.handleNestedValueChange}
+                      errors={errors}
+                      save={onSubmit}
+                      cancel={this.cancel} />  
+                  )
+                }}
+            </Validate>
         )
     }
 }

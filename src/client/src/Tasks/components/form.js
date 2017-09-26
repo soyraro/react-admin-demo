@@ -7,6 +7,7 @@ import {
     handleInputChange, handleOptionChange, 
     handleDateChange, handleQuillChange } from 'Commons/utils/forms'
 import ReactQuill from 'react-quill'
+import Validate from 'Commons/hoc/validate'
 import View from './form.view'
 import _ from 'lodash'
 
@@ -54,6 +55,7 @@ class Form extends Component {
         this.handleContactChange = this.handleContactChange.bind(this);
         this.handleClienTypeChange = this.handleClienTypeChange.bind(this);
         this.handleQuillChange = handleQuillChange.bind(this);
+        this.showErrorMessage = this.showErrorMessage.bind(this);
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
     }
@@ -245,31 +247,29 @@ class Form extends Component {
 
         if(!data.id) {
             // new
-            this.props.onAddTask(data).then(_=>{
+            return this.props.onAddTask(data).then(_=>{
                 this.props.flashSuccess({
                     text: "Se ha guardado los datos"
                 })
                 this.clear();
                 this.props.history.push(redirection);
-            }).catch(_=>{
-                this.props.flashError({
-                    text: "Hubo un error al guardar los datos"
-                })
             }); 
         } else {
             // update
-            this.props.onSaveTask(data).then(_=>{
+            return this.props.onSaveTask(data).then(_=>{
                 this.props.flashSuccess({
                     text: "Se ha guardado el registro"
                 })
                 this.clear();
                 this.props.history.push(redirection);
-            }).catch(_=>{
-                this.props.flashError({
-                    text: "Hubo un error al guardar el registro"
-                })
             });  
         }        
+    }
+
+    showErrorMessage = () => {
+        this.props.flashError({
+            text: "Hubo un error al guardar los datos"
+        })
     }
 
     cancel() {
@@ -289,23 +289,30 @@ class Form extends Component {
     render() {
        
         return ( 
-            <View data={this.state.data} 
-                isEdition={this.state.isEdition}
-                users={this.props.users}
-                enterprises={this.props.enterprises}
-                sectors={this.props.sectors}
-                contacts={this.props.contacts}
-                current_user={this.props.current_user}
-                statuses={this.props.statuses}
-                handleOptionChange={this.handleOptionChange}
-                handleClienTypeChange={this.handleClienTypeChange}
-                handleEnterpriseChange={this.handleEnterpriseChange}
-                handleSectorChange={this.handleSectorChange}
-                handleContactChange={this.handleContactChange}
-                handleQuillChange={this.handleQuillChange}
-                save={this.save}
-                cancel={this.cancel}
-            /> 
+            <Validate onSubmit={this.save} errorCallback={this.showErrorMessage}>
+            {(errors, onSubmit) => {
+                return ( 
+                    <View data={this.state.data} 
+                        isEdition={this.state.isEdition}
+                        users={this.props.users}
+                        enterprises={this.props.enterprises}
+                        sectors={this.props.sectors}
+                        contacts={this.props.contacts}
+                        current_user={this.props.current_user}
+                        statuses={this.props.statuses}
+                        handleOptionChange={this.handleOptionChange}
+                        handleClienTypeChange={this.handleClienTypeChange}
+                        handleEnterpriseChange={this.handleEnterpriseChange}
+                        handleSectorChange={this.handleSectorChange}
+                        handleContactChange={this.handleContactChange}
+                        handleQuillChange={this.handleQuillChange}
+                        errors={errors}
+                        save={onSubmit}
+                        cancel={this.cancel}
+                    /> 
+                )
+            }}
+            </Validate>
         )
     }
 }

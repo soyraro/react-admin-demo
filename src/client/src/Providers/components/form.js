@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
 import queryString from 'query-string'
+import Validate from 'Commons/hoc/validate'
 import View from './form.view'
 
 class Form extends Component {
@@ -50,6 +51,7 @@ class Form extends Component {
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleQuillChange = this.handleQuillChange.bind(this);
         this.handleOptionChange = this.handleOptionChange.bind(this);
+        this.showErrorMessage = this.showErrorMessage.bind(this);
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
     }
@@ -175,30 +177,28 @@ class Form extends Component {
         const self = this;
       
         if(!data.id) {
-            this.props.onAddProvider(data).then(_=>{
+            return this.props.onAddProvider(data).then(_=>{
                 self.props.flashSuccess({
                     text: "Se ha guardado los datos"
                 });
                 self.clear();
                 self.props.history.push(redirection);
-            }).catch(err=>{
-                self.props.flashError({
-                    text: "Hubo un error al guardar los datos"
-                })
             });  
         } else {
-            this.props.onSaveProvider(data).then(_=>{
+            return this.props.onSaveProvider(data).then(_=>{
                 self.props.flashSuccess({
                     text: "Se ha guardado los datos"
                 });
                 self.clear();
                 self.props.history.push(redirection);
-            }).catch(err=>{
-                self.props.flashError({
-                    text: "Hubo un error al guardar los datos"
-                })
             });    
         }      
+    }
+
+    showErrorMessage = () => {
+        this.props.flashError({
+            text: "Hubo un error al guardar los datos"
+        })
     }
 
     cancel() {
@@ -218,17 +218,24 @@ class Form extends Component {
     render() {
         
        return ( 
-            <View data={this.state.data} 
-                isEdition={this.state.isEdition}
-                countries={this.props.countries}
-                provinces={this.props.provinces}
-                handleCountryChange={this.handleCountryChange}
-                handleInputChange={this.handleInputChange}
-                handleQuillChange={this.handleQuillChange}
-                handleOptionChange ={this.handleOptionChange}
-                save={this.save}
-                cancel={this.cancel}
-            /> 
+            <Validate onSubmit={this.save} errorCallback={this.showErrorMessage}>
+            {(errors, onSubmit) => {
+                return ( 
+                    <View data={this.state.data} 
+                        isEdition={this.state.isEdition}
+                        countries={this.props.countries}
+                        provinces={this.props.provinces}
+                        handleCountryChange={this.handleCountryChange}
+                        handleInputChange={this.handleInputChange}
+                        handleQuillChange={this.handleQuillChange}
+                        handleOptionChange ={this.handleOptionChange}
+                        errors={errors}
+                        save={onSubmit}
+                        cancel={this.cancel}
+                    /> 
+                )
+            }}
+            </Validate>
         )
     }
 }

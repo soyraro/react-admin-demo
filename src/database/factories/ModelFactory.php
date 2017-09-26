@@ -10,10 +10,13 @@ use App\Family;
 use App\Group;
 use App\Interaction;
 use App\Product;
+use App\QuotationGroup;
 use App\Provider;
 use App\Province;
 use App\Sale;
+use App\SaleStatuses;
 use App\Sector;
+use App\ShipmentType;
 use App\Task;
 use App\User;
 use App\Web;
@@ -184,10 +187,16 @@ $factory->define(Task::class, function (Generator $faker) {
  
     $status = ['pendiente', 'realizada', 'finalizada'];
     
-    $enterprise = Enterprise::all()->random();
-    $sector = Sector::where('enterprise_id', $enterprise->id)->get()->random();
-    $contact = $sector->contacts()->first(); 
-        
+    $contact = null;
+    do {
+        $enterprise = Enterprise::all()->random();
+        $sectors = Sector::where('enterprise_id', $enterprise->id)->inRandomOrder()->get();
+        $sector = $sectors->first();
+        if($sector) {
+            $contact = $sector->contacts()->first(); 
+        }
+    } while (!$contact);
+    
     $date = Carbon::now();
     
     return [
@@ -223,31 +232,28 @@ $factory->define(Sale::class, function (Generator $faker) {
     $date = Carbon::now();
     
     return [        
-        'sale_status_id'=> \App\SaleStatuses::all()->random()->id,
+        'sale_status_id'=> SaleStatuses::all()->random()->id,
         'enterprise_id'=> $enterprise->id,
         'contact_id'=> $contact->id,
         'contact_mean'=> $contact_mean[rand(0, 3)],
         'observations'=> $faker->text(200),
-        'created_at'=> $date->subDays(rand(1, 40))
+        'created_at'=> $date->subDays(rand(1, 40)),
+        'currency_id'=> Currency::all()->random()->id,
+        'total_price'=> $faker->randomFloat(2, 200, 9000)
     ];
+    
 });
 
-$factory->define(\App\Quotation::class, function (Generator $faker) {
+$factory->define(QuotationGroup::class, function (Generator $faker) {
 
     return [
-            'sale_id'=> Sale::all()->random()->id,
-            'number'=> $faker->numerify('#####'),
-            'currency_id'=> Currency::all()->random()->id,
-            'total_price'=> $faker->randomFloat(2, 200, 9000)
-        ];
-});
-
-$factory->define(\App\Shipment::class, function (Generator $faker) {
-
-    return [
-            'shipment_type_id'=> \App\ShipmentType::all()->random()->id,
+            'shipment_type_id'=> ShipmentType::all()->random()->id,
             'fob'=> $faker->randomFloat(2, 200, 9000),
             'volume'=> $faker->numerify('#####'),
-            'weight'=> $faker->numerify('#####')
+            'weight'=> $faker->numerify('#####'),
+            'import_expenditure'=> $faker->randomFloat(2, 200, 9000),
+            'profitability'=> $faker->randomNumber(2),
+            'currency_id'=> Currency::all()->random()->id,
+            'sale_price'=> $faker->randomFloat(2, 200, 9000)
         ];
 });

@@ -19,7 +19,9 @@ class TaskSeeder extends Seeder
 
         $tasks = factory(Task::class, 18)->create();
         $tasks->each(function($task) {
-            $comments = factory(Comment::class, rand(1, 4))->create();
+            $comments = factory(Comment::class, rand(1, 4))->create([
+                'commentable_id' => $task->id
+            ]);
         });
     }
 }

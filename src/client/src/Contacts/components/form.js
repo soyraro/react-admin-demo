@@ -2,17 +2,26 @@ import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
 import queryString from 'query-string'
-import Select from 'react-select'
-import ReactQuill from 'react-quill'
+import { handleInputChange, handleOptionChange } from 'Commons/utils/forms'
 import View from './form.view'
 import _ from 'lodash'
+import Validate from 'Commons/hoc/validate'
 
 class Form extends Component {
 
+    /**
+     * Pre-declaring nested fields
+     */
     static defaultProps = {
-        data: {           
+        data: { 
+            emails: [
+                {},
+                {},
+                {}
+            ]
         }
-    };
+    }         
+     
     static propTypes = {
         data: PropTypes.object,
         enterprises: PropTypes.array.isRequired,
@@ -35,16 +44,16 @@ class Form extends Component {
         super(props);
 
         this.state = Object.assign({}, Form.defaultProps, props, {
-            isEdition: props.match.params.contact_id ? true : false     
+            data: Form.defaultProps.data,
+            isEdition: props.match.params.contact_id ? true : false,
+            pristine: true   
         });
-      
-        if(!this.state.isEdition) {
-            // re assure we are creating from scratch
-            this.props.unselectContact();
-        }
 
         // events
+        this.handleInputChange = handleInputChange.bind(this);
+        this.handleOptionChange = handleOptionChange.bind(this);
         this.handleEnterpriseChange = this.handleEnterpriseChange.bind(this);
+        this.handleEmailChange = this.handleEmailChange.bind(this);
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
     }
@@ -55,7 +64,10 @@ class Form extends Component {
     componentDidMount() {
 
         const self = this;
-         
+
+        // clean up previous data
+        this.props.unselectContact();
+
         // fetch data under edition
         if(this.state.isEdition) {
            
@@ -72,22 +84,27 @@ class Form extends Component {
         const self = this;
 
         // fetch enterprise/sectors list
-        this.props.getEnterprises().then(()=> {
+        this.props.getEnterprises()
+        .then(()=> {
             // set predefined enterprise
             const enterprise = (self.state.isEdition) ? self.state.data.enterprise : self.props.enterprises[1];
-            self.handleEnterpriseChange(enterprise);
-        });
-
-        this.props.getContactStates().then(()=> {
+            return self.handleEnterpriseChange(enterprise);
+        })
+        .then(()=>{
+            return this.props.getContactStates();
+        })
+        .then(()=> {
 
             const contact_state = (self.state.isEdition) ? 
                 _.find(self.props.states, {id: self.state.data.enterprise.state_id}) 
                 : self.props.states[0];
+
             // set predefined sector
             self.setState({
                 data: Object.assign({}, self.state.data, {
                     contact_state
-                })
+                }),
+                pristine: false
             });
         })
     }
@@ -95,20 +112,26 @@ class Form extends Component {
     /**
      * Form data received for edition
      * 
-     * @param {obj} nextProps 
+     * @param {obj} newProps 
      */
-    componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(newProps) {
        
-        this.setState({
-            data: nextProps.data,
-        });
+        if(this.state.pristine) {
+            this.setState({
+                data: {
+                    ... this.state.data,
+                    ... newProps.data,   
+                    emails: Object.assign([], Form.defaultProps.data.emails, newProps.data.emails)
+                }                
+            });
+        }  
     }
 
     handleEnterpriseChange(enterprise) {
        
         const self = this;
        
-        this.props.getSectors(enterprise.id).then(_=> {
+        return this.props.getSectors(enterprise.id).then(_=> {
 
             const sector = (self.state.isEdition) ? self.state.data.sector : self.props.sectors[0];
 
@@ -122,9 +145,39 @@ class Form extends Component {
         })
     }
 
-    save(data) {
+    /**
+     * Handle form nested values
+     * @param {*} event 
+     */
+    handleEmailChange(key, event) {
+        
+        const value = event.target.value;
+        
+        const emails = this.state.data.emails;
 
-        const enterprise_id = data.enterprise;
+        if(value) {
+            emails[key].email = value;
+        } else {
+            emails[key] = {};
+        }
+        
+        this.setState({
+            data: Object.assign({}, this.state.data, {
+                emails 
+            })
+        });
+    }
+
+    showErrorMessage = () => {
+        this.props.flashError({
+            text: "Hubo un error al guardar los datos"
+        })
+    }
+    
+    save() {
+       
+        const data = this.state.data;  
+        const enterprise_id = data.enterprise.id;
         const contact_id = data.id;
 
         // will redirect to filtered list after saving
@@ -139,29 +192,21 @@ class Form extends Component {
 
         if(!data.id) {
             // new
-            this.props.onAddContact(enterprise_id, data).then(_=>{
+            return this.props.onAddContact(enterprise_id, data).then(_=>{
                 this.props.flashSuccess({
                     text: "Se ha guardado los datos"
                 })
                 this.clear();
                 this.props.history.push(redirection);
-            }).catch(_=>{
-                this.props.flashError({
-                    text: "Hubo un error al guardar los datos"
-                })
             }); 
         } else {
             // update
-            this.props.onSaveContact(enterprise_id, contact_id, data).then(_=>{
+            return this.props.onSaveContact(enterprise_id, contact_id, data).then(_=>{
                 this.props.flashSuccess({
                     text: "Se ha guardado el registro"
                 })
                 this.clear();
                 this.props.history.push(redirection);
-            }).catch(_=>{
-                this.props.flashError({
-                    text: "Hubo un error al guardar el registro"
-                })
             });  
         }        
     }
@@ -181,17 +226,26 @@ class Form extends Component {
     }
 
     render() {
-       
         return ( 
-            <View data={this.state.data} 
-                isEdition={this.state.isEdition}
-                enterprises={this.props.enterprises}
-                sectors={this.props.sectors}
-                contact_states={this.props.states}
-                handleEnterpriseChange={this.handleEnterpriseChange}
-                save={this.save}
-                cancel={this.cancel}
-            /> 
+            <Validate onSubmit={this.save} errorCallback={this.showErrorMessage}>
+                {(errors, onSubmit) => {
+                    return ( 
+                        <View data={this.state.data} 
+                            isEdition={this.state.isEdition}
+                            enterprises={this.props.enterprises}
+                            errors={errors} 
+                            sectors={this.props.sectors}
+                            contact_states={this.props.states}
+                            handleInputChange={this.handleInputChange}
+                            handleOptionChange={this.handleOptionChange}
+                            handleEnterpriseChange={this.handleEnterpriseChange}
+                            handleEmailChange={this.handleEmailChange}
+                            save={onSubmit}
+                            cancel={this.cancel}
+                        /> 
+                    )
+                }}
+            </Validate>
         )
     }
 }

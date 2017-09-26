@@ -9,9 +9,10 @@ import classNames  from 'classnames'
 import {Link} from 'react-router-dom'
 import moment from 'moment'
 import 'moment/locale/es'
-import { formatDateVisualy, formatDateForStorage } from '../../Commons/utils/dates'
+import { formatDateVisually, formatDateForStorage } from '../../Commons/utils/dates'
 import FlashMessages from '../../FlashMessages'
 import Comments from '../../Comments/components'
+import {ButtonContainer,ButtonBlue,ButtonDefault} from '../../Commons/components/buttons'
 
 class Form extends Component {
 
@@ -22,14 +23,14 @@ class Form extends Component {
         markViewed: PropTypes.func.isRequired,
         statuses: PropTypes.array.isRequired,
         location: PropTypes.object.isRequired,
-        history: PropTypes.object.isRequired,   
+        history: PropTypes.object.isRequired,
     }
 
     /**
      * Pre-declaring nested fields
      */
     static defaultProps = {
-        data: { 
+        data: {
             author: {},
             receiver: {},
             contact: {},
@@ -39,9 +40,8 @@ class Form extends Component {
     }
 
     constructor(props) {
-
         super(props);
-        
+
         this.state = {
             ...Form.defaultProps.data,
             ...props.data
@@ -50,70 +50,45 @@ class Form extends Component {
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
         this.handleOptionChange = this.handleOptionChange.bind(this);
+        this.fetchTask();
     }
 
     fetchTask() {
         this.props.getTask(this.props.match.params.id);
     }
 
-    /**
-     * Page is visited
-     */
-    componentDidMount() {
-        this.fetchTask();
-    }
-
-    /**
-     * Occurs when user switch tasks without leaving the page,
-     * so id param changes but there's not a page "reload"
-     */
-    componentDidUpdate(prevProps, prevState) {
-
-       if(prevProps.match.params.id !== this.props.match.params.id) {
-            this.fetchTask();
-       }
-    }
-
     componentWillReceiveProps(newProps) {
-      
-        this.setState({                       
-            ...newProps.data,
-            status: _.find(newProps.statuses, {value: newProps.data.status})
-        });
-
-        /**
-         * Mark as viewed
-         */
         const viewed = newProps.data.viewed;
-        const assignedToMe = (newProps.data.receiver.id == newProps.current_user.id);
+        const assignedToMe = (newProps.data.receiver && newProps.data.receiver.id == newProps.current_user.id);
         if( !viewed && assignedToMe) {
             newProps.markViewed(newProps.data.id);
         }
     }
 
     /**
-     * Handle dropdowns & radio buttons 
+     * Handle dropdowns & radio buttons
      * @param {*} field name
-     * @param {*} value 
+     * @param {*} value
      */
     handleOptionChange(field, value) {
-        this.setState({ [field]: value });
+      this.props.data.status = value
+      this.setState(state => {
+        return {...state, data: this.props.data}
+      })
     }
 
     save() {
-
         const data = {
-            ...this.state
-        };  
-
+            ...this.props.data
+        };
         // will redirect to filtered list after saving
         const redirection = {
             pathname: '/tareas',
             search: queryString.stringify({
                 receiver_id: data.receiver.id,
-                status: data.status.value
+                status: data.status
             })
-        }     
+        }
 
         // update
         this.props.onSaveTask(data).then(_=>{
@@ -126,8 +101,7 @@ class Form extends Component {
             this.props.flashError({
                 text: "Hubo un error al actualizar la tarea"
             })
-        });  
-                
+        });
     }
 
     cancel() {
@@ -144,13 +118,21 @@ class Form extends Component {
     }
 
     render() {
+        const {
+          comments = []
+          ,contact = {}
+          ,enterprise = {}
+          ,sector = {}
+          ,priority
+          ,status
+          ,receiver = {}
+          ,author = {}
+          ,created_at
+          ,updated_at
+          ,id
+        } = this.props.data;
 
-        const data = this.state;
-        const contact = data.contact;
-        const enterprise = data.enterprise;
-        const sector = data.sector;
-     
-        const ribbonColor = data.priority == 'urgente' ? "danger" : "info"
+        const ribbonColor = priority === 'urgente' ? 'danger' : 'info'
 
         return (
 
@@ -167,11 +149,11 @@ class Form extends Component {
                             <div className="caption">
                                 <i className="icon-bubble font-red-sunglo"></i>
                                 <span className="caption-subject bold uppercase font-red-sunglo">  Tarea dirigida a </span>
-                                <span className="caption-subject bold uppercase">{ data.receiver.fullname }</span>
-                            </div> 
-                        
-                            <h4 className="narrow-title"><small>Creada por: </small>{ data.author.fullname }</h4>  
-                            <p className="narrow-title"><small>Fecha: </small>{data.created_at}</p>   
+                                <span className="caption-subject bold uppercase">{ receiver.fullname }</span>
+                            </div>
+
+                            <h4 className="narrow-title"><small>Creada por: </small>{ author.fullname }</h4>
+                            <p className="narrow-title"><small>Fecha: </small>{created_at}</p>
                         </div>
 
                         <div className="col-xs-12 col-sm-6">
@@ -181,80 +163,82 @@ class Form extends Component {
                         </div>
                     </div>
                 </div>
+
                 <div className="portlet-body form">
                     <form className="" role="form">
 
                         <div className="form-body">
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div className="col-xs-12">
                                     <div className="mt-element-ribbon bg-grey-steel">
-                                        <div className={classNames("ribbon", "uppercase", "ribbon-color-"+ribbonColor)}>Prioridad { data.priority }</div>
+                                        <div className={classNames("ribbon", "uppercase", "ribbon-color-"+ribbonColor)}>Prioridad { priority }</div>
                                         <div className="ribbon-content">
-                                            
+
                                             <small>{ enterprise.client_type }</small>
-                                            <h3 className="narrow-title"><Link to={"/empresas/"+enterprise.id+"/edicion"}>{ enterprise.legal_name }</Link> 
+                                            <h3 className="narrow-title"><Link to={"/empresas/"+enterprise.id+"/edicion"}>{ enterprise.legal_name }</Link>
                                                 <small> <Link to={"/empresas/contactos?enterprise_id="+enterprise.id+"&sector_id="+sector.id+"&state_id=1"}>{ sector.name }</Link></small></h3>
                                             <h4><Link to={"/empresas/"+enterprise.id+"/contactos/"+contact.id+"/edicion"}>{ contact.fullname }</Link></h4>
                                         </div>
-                                    </div>                                    
-                                </div>   
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">                                  
-                                      
+                                <div className="col-xs-12">
+
                                         <div className="portlet light bg-inverse">
                                             <div className="portlet-title">
                                                 <div className="caption">
                                                     <i className="icon-paper-plane font-yellow-casablanca"></i>
                                                     <span className="caption-subject bold font-yellow-casablanca uppercase"> Descripción</span>
                                                     <span className="caption-helper"></span>
-                                                </div>                                               
+                                                </div>
                                             </div>
                                             <div className="portlet-body">
-                                                <div dangerouslySetInnerHTML={{__html: this.state.description}}></div>
+                                                <div dangerouslySetInnerHTML={{__html: this.props.data.description}}></div>
                                             </div>
                                         </div>
                                 </div>
                             </div>
 
                             <div className="row">
-                               
+
                                 <div className="col-xs-12 col-sm-4 col-md-2">
                                     <div className="form-group">
                                         <label>Estado</label>
-                                        { this.props.statuses.length > 0 && data.status &&
+                                        { this.props.statuses.length > 0 && status &&
                                             <Select
                                                 name="status"
                                                 placeholder="Seleccione..."
-                                                value={data.status.value}
+                                                value={status}
                                                 options={this.props.statuses}
                                                 clearable={false}
                                                 onChange={obj=>{this.handleOptionChange("status", obj)}}
                                                 />
-                                        } 
+                                        }
                                     </div>
                                 </div>
                             </div>
 
                             <div className="row caption">
                                 <div className="col-xs-12 col-sm-6">
-                                    <div className="caption-desc font-grey-cascade">Ultima modificación: { data.updated_at }</div>
+                                    <div className="caption-desc font-grey-cascade">Ultima modificación: { updated_at }</div>
                                 </div>
                             </div>
 
-                            <input type="hidden" name="id" value={this.props.data.id} />                         
+                            <input type="hidden" name="id" value={this.props.data.id} />
                         </div>
-                        <div className="form-actions">
-                            <button type="button" className="btn blue" onClick={this.save}>Guardar</button>
-                            <button type="button" className="btn default" onClick={this.cancel}>Cancelar</button>
-                        </div>
+
+                        <ButtonContainer>
+                          <ButtonBlue onClick={this.save}>Guardar</ButtonBlue>
+                          <ButtonDefault onClick={this.cancel}>Cancelar</ButtonDefault>
+                        </ButtonContainer>
                     </form>
                 </div>
 
-                {this.props.data.id &&
-                    <Comments list={data.comments} id={this.props.data.id} />
+                {id &&
+                    <Comments list={comments} id={id} />
                 }
             </div>
         );

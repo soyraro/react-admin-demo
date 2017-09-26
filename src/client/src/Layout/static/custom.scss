@@ -17,7 +17,7 @@
   margin: 10px 0;
 }
 
-/* LOGIN */ 
+/* LOGIN */
 .login .content .form-title {
     margin-bottom: 65px;
 }
@@ -150,6 +150,14 @@
 	width: 60px;
 }
 
+.secondary-table-header {
+  background: #edebea;
+}
+
+.secondary-table-body {
+  background: #f5f4f3;
+}
+
 /* SIDEBAR */
 .page-sidebar-wrapper .page-sidebar-menu .sidebar-toggler-wrapper {
     margin-bottom: 15px;
@@ -218,6 +226,38 @@ form .margin-bottom{
   padding: 0px 15px;
 }
 
+.has-error {
+  .ql-toolbar.ql-snow{
+    border-bottom-color: red;
+  }
+  .Select-control, .ql-container.ql-snow {
+    border-color: red;
+  }
+}
+
+.panel-uploader{
+  .btn-circle {
+    padding: 0;
+    display: inline-block;
+    vertical-align: top;
+    background: transparent;
+    overflow: visible;
+    i {
+      font-size: 23px;
+      color: #333;
+    }
+  }
+  .body-content {
+    overflow: hidden;
+  }
+}
+
+.quotation-group-product-form {
+  .btn-save-product {
+    margin: 0 5px;
+  }
+}
+
 /**
 * Animate.css
 */
@@ -256,4 +296,56 @@ form .margin-bottom{
   -webkit-backface-visibility: visible !important;
   backface-visibility: visible !important;
   animation-name: flipInX;
+}
+
+/**
+* Interactions 
+*/
+.interactions-page {
+
+  h3 {
+    margin: 5px 0px;
+  }
+
+  .interactionList-buttons .btn {
+    margin-right: 5px;
+  }
+
+  .interation-box .portlet {
+    border: 1px solid #FAFAFA;
+    
+    .portlet-title {
+      margin-bottom: 0;
+    }
+
+    .portlet-body {
+      background: #eef1f5;
+      padding: 10px 15px;
+    }
+  }
+
+  .caption-helper-date {
+    margin-left: 5px !important;
+  }
+
+  .pagination {
+      .itemDisabled,
+      li:first-child,
+      li:last-child {
+          display: none !important;
+      }
+  }
+}
+
+/**
+Modals
+*/
+.quotation-models-modal {
+  .list-group-item {
+    padding: 3px 15px !important;
+    span {
+      display: inline-block;
+      padding: 8px 0px;
+    }
+  }
 }

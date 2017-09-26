@@ -12,7 +12,7 @@ import DayPickerInput from 'react-day-picker/DayPickerInput'
 import LocaleUtils from 'react-day-picker/moment'
 import moment from 'moment'
 import 'moment/locale/es'
-import { formatDateVisualy, formatDateForStorage } from 'Commons/utils/dates'
+import { formatDateVisually, formatDateForStorage } from 'Commons/utils/dates'
 import swal from 'sweetalert2'
 import _ from 'lodash'
 
@@ -236,7 +236,7 @@ class TasksPage extends Component {
                                                         name="date_from"                                            
                                                         placeholder="dd/mm/yyyy"
                                                         format="DD/MM/YYYY"
-                                                        value={formatDateVisualy(this.state.filters.date_from) || ''}
+                                                        value={formatDateVisually(this.state.filters.date_from) || ''}
                                                         onDayChange={val=>this.filterByDate("date_from", val)}
                                                         dayPickerProps={dayPickerProps}
                                                         />
@@ -248,7 +248,7 @@ class TasksPage extends Component {
                                                         name="date_to"                                            
                                                         placeholder="dd/mm/yyyy"
                                                         format="DD/MM/YYYY"
-                                                        value={formatDateVisualy(this.state.filters.date_to) || ''}
+                                                        value={formatDateVisually(this.state.filters.date_to) || ''}
                                                         onDayChange={val=>this.filterByDate("date_to", val)}
                                                         dayPickerProps={dayPickerProps}
                                                         />

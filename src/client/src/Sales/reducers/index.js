@@ -6,7 +6,9 @@ const skel = {
     contact_means: [],
     selected: {
         quotation: {
-            products: []
+            products: [],
+            quotation_groups: [],
+            selected_group: {}
         }
     }    
 }
@@ -39,7 +41,7 @@ function sales (state = skel, action) {
             });
         case 'ADD_SALE':
             return Object.assign({}, state, {
-                list: state.created.concat([action.payload.data])
+                list: state.list.concat([action.payload.data])
             });
         case 'SALE_STATUSES_LIST_SUCCESS':
             return Object.assign({}, state, {
@@ -51,7 +53,7 @@ function sales (state = skel, action) {
             });   
         case 'SAVE_SALE':
             // replace item 
-            const updatedList = state.map(item => {
+            const updatedList = state.list.map(item => {
 
                 if(item.id === action.payload.data.id){
                     return { ...item, ...action.payload.data }

@@ -38,7 +38,8 @@ class SaleController extends Controller
                 'contact' => function($query) {
                     $query->select('id', 'fullname');
                 }, 
-                'status'])
+                'status'
+                ])
                 ->when($date_from, function($query) use ($date_from) {
                     $query->whereDate('created_at', '>=', $date_from);
                 })
@@ -127,9 +128,12 @@ class SaleController extends Controller
 
         try {
 
-            $sale = Sale::with(['quotation'=>function($query){
-                    $query->with('products');
-                }])
+            $sale = Sale::with([
+                    'products', 
+                    'quotationGroups' => function($query) {
+                        return $query->with('attachments');
+                    }
+                ])
                 ->where('id', $id)
                 ->firstOrFail();
             
@@ -154,6 +158,8 @@ class SaleController extends Controller
             'sale_status_id' => 'required|integer',
             'enterprise_id' => 'required|integer',
             'contact_id' => 'required|integer',
+            'currency_id' => 'sometimes|required|integer',
+            'total_price' => 'sometimes|required|number',
             'observations' => 'sometimes|present'
         ]);
         
@@ -166,6 +172,8 @@ class SaleController extends Controller
         $model->sale_status_id = intval($request->input('sale_status_id'));
         $model->enterprise_id = intval($request->input('enterprise_id'));
         $model->contact_id = intval($request->input('contact_id'));
+        $model->currency_id = intval($request->input('currency_id')) || \App\Currency::first()->id;
+        $model->total_price = floatval($request->input('total_price')) || 0;
         $model->observations = $request->input('observations');
         $model->save();
         

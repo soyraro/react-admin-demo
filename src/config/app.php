@@ -77,7 +77,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'es',
 
     /*
     |--------------------------------------------------------------------------
@@ -185,6 +185,7 @@ return [
         Barryvdh\Cors\ServiceProvider::class,
         //Barryvdh\Debugbar\ServiceProvider::class,
         //Lanin\Laravel\ApiDebugger\ServiceProvider::class,
+        Laraveles\Spanish\SpanishServiceProvider::class,
     ],
 
     /*
@@ -234,7 +235,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Fractal' => Spatie\Fractal\FractalFacade::class,
-        'Debugger' => Lanin\Laravel\ApiDebugger\Facade::class,
+        //'Debugger' => Lanin\Laravel\ApiDebugger\Facade::class,
 
     ],
     
@@ -244,7 +245,7 @@ return [
     'public_resources' => [
         'avatars' => 'assets/avatars' // user avatars
     ], 
-    
+        
     /**
      * Default image name
      */
@@ -255,4 +256,38 @@ return [
      * Requests will redirect to this version if none version has been provided
      */
     'current_api_version'=> env('API_VERSION', 1),
+    
+    /**
+     * Spanish date format
+     */
+    'date_format'=> 'd/m/Y',
+    
+    /**
+     * Quotation xlsx cells map
+     */
+    'xlsx_field_map' => [
+        'avion' => [
+            'fob_price' => 'B1',
+            'volume' => 'B2',
+            'weight' => 'B4',
+            'result' => 'D143'
+        ], 
+        'EMS' => [
+            'fob_price' => 'B1',
+            'weight' => 'B6',
+            'result' => 'D64'
+        ], 
+        'maritimo-consolidado' => [
+            'fob_price' => 'B1',
+            'volume' => 'C5',
+            'result' => 'D102'
+        ], 
+        'maritimo-en-contenedor' => [
+            'fob_price' => 'B1',
+            'containers_quantity' => 'B2',
+            'size' => 'B3',
+            'client_transport' => 'B4',
+            'result' => 'D127'
+        ]
+    ]
 ];

@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Attachments extends Model
 {
     
-    public function sale()
+    public function entity()
     {
-        return $this->belongsTo('App\Sale');
+        return $this->morphTo();
     }
 }

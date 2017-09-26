@@ -23,8 +23,6 @@ export function fetchContactsList(filters) {
             params: filters
         }).then(response => { 
             dispatch(contactListSuccess(response.data.data));
-        }).catch(function (err) {
-            console.log(err);
         });
     }
 }
@@ -36,8 +34,6 @@ export function fetchEnterpriseContactList(enterprise_id) {
   
         return axios.get('/enterprises/'+enterprise_id+'/contacts').then(response => { 
             dispatch(contactListSuccess(response.data.data));
-        }).catch(function (err) {
-            console.log(err);
         });
     }
 }
@@ -49,8 +45,6 @@ export function getEnterpriseContact(enterprise_id, contact_id) {
       
         return axios.get('/enterprises/'+enterprise_id+'/contacts/'+contact_id).then(response => { 
             dispatch(contactSelected(response.data));
-        }).catch(function (err) {
-            console.log(err);
         });
     }
 }
@@ -71,8 +65,6 @@ export function fetchContactStates() {
                         list: response.data
                     }
                 });
-            }).catch(function (err) {
-                console.log(err);
             });
         } else {
             return Promise.resolve();
@@ -104,10 +96,18 @@ export function contactUnselected() {
     }
 }
 
-export function addContact(enterprise_id, data) {
+export function addContact(enterprise_id, raw_data) {
 
     // persist data in DB
     return (dispatch, getState) => { 
+       
+        const data = {
+            ...raw_data,
+            enterprise: enterprise_id,
+            sector: raw_data.sector.id,
+            contact_state: raw_data.contact_state.id,
+            emails: raw_data.emails.filter(x=>{ return (x.id || x.email) })
+        };  
 
         const endpoint = '/enterprises/' + enterprise_id + '/contacts';
 
@@ -129,11 +129,19 @@ export function addContact(enterprise_id, data) {
     }
 }
 
-export function saveContact(enterprise_id, contact_id, data) {
+export function saveContact(enterprise_id, contact_id, raw_data) {
 
     // persist data in DB
     return (dispatch, getState) => { 
-
+       
+        const data = {
+            ...raw_data,
+            enterprise: enterprise_id,
+            sector: raw_data.sector.id,
+            contact_state: raw_data.contact_state.id,
+            emails: raw_data.emails.filter(x=>{ return (x.id || x.email) })
+        };  
+       
         const endpoint = '/enterprises/' + enterprise_id + '/contacts/' + contact_id;
 
         return axios.put(endpoint, data)

@@ -25,8 +25,6 @@ export function fetchSalesList(filters) {
             params: filters
         }).then(response => { 
             dispatch(saleListSuccess(response.data.data));
-        }).catch(function (err) {
-            console.log(err);
         });
     }
 }
@@ -71,7 +69,7 @@ export function addSale(data) {
     return (dispatch, getState) => { 
    
         const params = {
-            date: formatDateForStorage(data.date),
+            date: data.date,
             contact_mean: data.contact_mean.value,
             sale_status_id: data.status.id,
             enterprise_id: data.enterprise.id,

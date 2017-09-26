@@ -22,8 +22,6 @@ export function fetchEnterpriseList(filters) {
             params: filters
         }).then(response => { 
             dispatch(enterpriseListSuccess(response.data.data));
-        }).catch(function (err) {
-            console.log(err);
         });
     }
 }

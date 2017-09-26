@@ -8,6 +8,7 @@ import DayPickerInput from 'react-day-picker/DayPickerInput'
 import LocaleUtils from 'react-day-picker/moment'
 import moment from 'moment'
 import 'moment/locale/es'
+import { formatDateForStorage } from 'Commons/utils/dates'
 
 class Form extends Component {
 
@@ -28,7 +29,6 @@ class Form extends Component {
         this.state = props.data;
       
         // events
-        
         this.save = this.save.bind(this);
         this.cancel = this.cancel.bind(this);
     }
@@ -46,7 +46,7 @@ class Form extends Component {
 
         const data = {
             ...this.state,
-            date: moment(this.state.date).format(config.dates.visual_format),
+            date: formatDateForStorage(this.state.date),
             contact: this.state.contact
         };       
       

@@ -65,20 +65,7 @@ class Relationships extends Migration
             $table->foreign('state_id')
                 ->references('id')->on('contact_states')
                 ->onDelete('restrict');            
-        });      
-        
-        Schema::create('product_sale', function (Blueprint $table) {
-       
-            $table->integer('product_id')->unsigned()->nullable()->index();
-            $table->foreign('product_id')->references('id')
-                ->on('products')->onDelete('restrict');
-
-            $table->integer('sale_id')->unsigned()->nullable()->index();
-            $table->foreign('sale_id')->references('id')
-                ->on('sales')->onDelete('cascade');
-            
-            $table->primary(['product_id', 'sale_id']);
-        });        
+        });                
     }
 
     /**

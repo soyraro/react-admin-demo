@@ -10,6 +10,7 @@ import sectors from '../Sectors/reducers'
 import contacts from '../Contacts/reducers'
 import interactions from '../Interactions/reducers'
 import currencies from '../Commons/reducers/currencies'
+import currencies_rates from '../Commons/reducers/currencies_rates'
 import tasks from '../Tasks/reducers'
 import sales from '../Sales/reducers'
 import flashMessages from '../FlashMessages/reducers';
@@ -31,7 +32,8 @@ export default combineReducers({
   sectors,
   session,
   tasks,
-  users
+  users,
+  currencies_rates
 })
 
 /**
@@ -39,7 +41,7 @@ export default combineReducers({
  * FYI:
  * - selected: is used for edition.
  * - nested elements like country/provinces are laisy loaded and cached.
- */ 
+ */
 let storeTree = {
   profile: {},
   users: {
@@ -83,7 +85,7 @@ let storeTree = {
   products: {
     list: [],
     selected: ''
-  },  
+  },
   families: {
     list: [{
       // ...data,
@@ -92,6 +94,6 @@ let storeTree = {
       // ...data,
       groups: []
     }],
-    selected: ''    
+    selected: ''
   }
 }

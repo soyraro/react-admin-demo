@@ -10,6 +10,11 @@ class Actions extends Component {
         onDelete: PropTypes.func.isRequired,
     }
 
+    constructor(props) {
+      super(props)
+      this.onDeleteClick = this.onDeleteClick.bind(this)
+    }
+
     /**
      * ID will be provided on the fly by Table component iterator
      */
@@ -18,16 +23,22 @@ class Actions extends Component {
         interaction_id: null
     };
 
+    onDeleteClick() {
+      const {contactId,interactionId} = this.props
+      this.props.onDelete(contactId, interactionId)
+    }
+
     render() {
+        const {enterpriseId,interactionId} = this.props
         return (
             <div className="actions">
-                <Link type="button" className="btn btn-circle btn-icon-only btn-default green" 
-                    to={"/empresas/"+this.props.enterprise_id+"/interacciones/" +this.props.interaction_id+ "/edicion"}>
+                <Link type="button" className="btn btn-circle btn-icon-only btn-default green"
+                    to={`/empresas/${enterpriseId}/interacciones/${interactionId}/edicion`}>
                     <i className="fa fa-pencil"></i>
                 </Link>
-                <button type="button" className="btn btn-circle btn-icon-only btn-default red" onClick={()=>{this.props.onDelete(this.props.interaction_id)}}>
+                <button type="button" className="btn btn-circle btn-icon-only btn-default red" onClick={this.onDeleteClick}>
                     <i className="fa fa-remove"></i>
-                </button>            
+                </button>
             </div>
         )
     }

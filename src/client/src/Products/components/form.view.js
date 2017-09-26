@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import Select from 'react-select'
 import { Link } from 'react-router-dom'
+import { Input, DropdownList } from 'Commons/components/form'
 import FlashMessages from '../../FlashMessages'
 
 class Form extends Component {
@@ -48,6 +49,9 @@ class Form extends Component {
 
     render() {
      
+        const data = this.state;
+        const {errors} = this.props;
+
         return (
 
             <div className="portlet light bordered">
@@ -87,93 +91,68 @@ class Form extends Component {
                                             />
                                     </div>
                                 </div>
-                                <div className="col-xs-12 col-md-2">
-                                    <div className="form-group">
-                                        <label htmlFor="code">Código</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="code"     
-                                                className="form-control"
-                                                placeholder="Código"
-                                                value={this.state.code}
-                                                onChange={this.props.handleInputChange}
-                                                />
-                                            <span className="input-group-addon">
-                                                <span className="icon-tag"></span>
-                                            </span>
-                                        </div>
-                                    </div>             
-                                </div>
-                                <div className="col-xs-12 col-md-4">
-                                    <div className="form-group">
-                                        <label htmlFor="name">Nombre</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="name"     
-                                                className="form-control"
-                                                placeholder="Nombre"
-                                                value={this.state.name}
-                                                onChange={this.props.handleInputChange}
-                                                />
-                                            <span className="input-group-addon">
-                                                <span className="icon-tag"></span>
-                                            </span>
-                                        </div>
-                                    </div>             
-                                </div>
-                                <div className="col-xs-12 col-md-4"></div>
+
+                                <Input
+                                    classnames="col-xs-12 col-md-4"
+                                    label="Código"
+                                    name="code"
+                                    icon="icon-tag"
+                                    value={data.code}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['code'])}
+                                    />  
+                              
+                                <Input
+                                    classnames="col-xs-12 col-md-6"
+                                    label="Nombre"
+                                    name="name"
+                                    icon="icon-tag"
+                                    value={data.name}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['name'])}
+                                    />  
                             </div>
 
-                             <div className="row">                     
-                                <div className="col-xs-12 col-md-4">
-                                    <div className="form-group">
-                                        <label>Proveedor</label>
-                                        { this.props.providers.length > 0 && this.state && this.state.provider &&                                         
-                                            <Select
-                                                name="provider"
-                                                placeholder="Seleccione..."
-                                                value={this.state.provider.id}
-                                                options={this.props.providers}
-                                                onChange={obj=>{this.props.handleOptionChange("provider", obj)}}
-                                                />
-                                        }
-                                    </div>         
-                                </div>
-
-                                <div className="col-xs-12 col-md-3">
-                                    <div className="form-group">
-                                        <label>Familia</label>
-                                        { this.props.families.length > 0 && this.state && this.state.family &&    
-                                            <Select
-                                                name="family"
-                                                placeholder="Seleccione..."
-                                                value={this.state.family.id}
-                                                options={this.props.families}
-                                                onChange={obj=>{this.props.handleFamilyChange(obj)}}
-                                                />
-                                        }
-                                    </div>         
-                                </div>
-
-                                <div className="col-xs-12 col-md-3">
-                                    <div className="form-group">
-                                        <label>Grupo</label>
-                                        { this.props.groups.length > 0 && this.state && this.state.group &&    
-                                            <Select
-                                                name="group"
-                                                placeholder="Seleccione..."
-                                                noResultsText="Sin resultados"
-                                                value={this.state.group.id}
-                                                options={this.props.groups}
-                                                onChange={obj=>{this.props.handleOptionChange("group", obj)}}
-                                                />
-                                        }
-                                    </div>         
-                                </div>
+                             <div className="row">      
+                               
+                                { this.props.providers.length > 0 && this.state && this.state.provider &&                                         
+                                 
+                                    <DropdownList
+                                        classnames="col-xs-12 col-md-4"
+                                        name="provider"
+                                        label="Proveedor"
+                                        value={data.provider.id}
+                                        list={this.props.providers}
+                                        handle={(field, obj)=>{this.props.handleOptionChange(field, obj)}}
+                                        errorMessage={errors.messageContainer(errors['provider'])}
+                                        />
+                                }
                                 
-                                <div className="col-xs-12 col-md-2"></div>
+                                { this.props.families.length > 0 && this.state && this.state.family &&    
+
+                                    <DropdownList
+                                        classnames="col-xs-12 col-md-4"
+                                        name="family"
+                                        label="Familia"
+                                        value={data.family.id}
+                                        list={this.props.families}
+                                        handle={(field, obj)=>{this.props.handleFamilyChange(obj)}}
+                                        errorMessage={errors.messageContainer(errors['family'])}
+                                        />
+                                }
+                        
+                                { this.props.groups.length > 0 && this.state && this.state.group &&    
+                    
+                                    <DropdownList
+                                        classnames="col-xs-12 col-md-4"
+                                        name="group"
+                                        label="Grupo"
+                                        value={data.group.id}
+                                        list={this.props.groups}
+                                        handle={(field, obj)=>{this.props.handleOptionChange(field, obj)}}
+                                        errorMessage={errors.messageContainer(errors['group'])}
+                                        />
+                                }
                             </div>
 
                             <div className="row">                     
@@ -191,25 +170,17 @@ class Form extends Component {
                                         }
                                     </div>         
                                 </div>
-                                <div className="col-xs-8 col-md-2">
-                                    <div className="form-group">
-                                        <label htmlFor="price">Precio</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="price"     
-                                                className="form-control"
-                                                placeholder="Precio"
-                                                value={this.state.price}
-                                                onChange={this.props.handleInputChange}
-                                                />
-                                            <span className="input-group-addon">
-                                                <span className="fa fa-usd"></span>
-                                            </span>
-                                        </div>
-                                    </div>             
-                                </div>
-                                <div className="col-xs-12 col-md-9"></div>
+                             
+                                <Input
+                                    classnames="col-xs-8 col-md-3"
+                                    label="Precio"
+                                    name="price"
+                                    icon="fa fa-usd"
+                                    value={data.price}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['price'])}
+                                    />  
+                                <div className="col-xs-12 col-md-8"></div>
                             </div>         
 
                             <input type="hidden" name="id" value={this.props.data.id} />                         

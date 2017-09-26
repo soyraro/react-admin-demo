@@ -16,9 +16,9 @@ export const REMOVE_INTERACTION = 'REMOVE_INTERACTION'
 export function fetchContactInteractionList(contact_id) {
 
     // fetch data from DB
-    return (dispatch) => { 
-      
-        return axios.get('/contacts/'+contact_id+'/interactions').then(response => { 
+    return (dispatch) => {
+
+        return axios.get('/contacts/'+contact_id+'/interactions').then(response => {
             dispatch(interactionListSuccess(response.data.data));
         }).catch(function (err) {
             console.log(err);
@@ -34,9 +34,9 @@ export function fetchEnterpriseInteractionList(enterprise_id, contact_id = null)
     }
 
     // fetch data by enterprise_id
-    return (dispatch) => { 
-      
-        return axios.get('/enterprises/'+enterprise_id+'/interactions').then(response => { 
+    return (dispatch) => {
+
+        return axios.get('/enterprises/'+enterprise_id+'/interactions').then(response => {
             dispatch(interactionListSuccess(response.data.data));
         }).catch(function (err) {
             console.log(err);
@@ -56,9 +56,9 @@ export function interactionListSuccess(list) {
 export function getInteraction(enterprise_id, interaction_id) {
 
     // fetch data from DB
-    return (dispatch) => { 
-      
-        return axios.get('/enterprises/'+enterprise_id+'/interactions/'+interaction_id).then(response => { 
+    return (dispatch) => {
+
+        return axios.get('/enterprises/'+enterprise_id+'/interactions/'+interaction_id).then(response => {
             dispatch(interactionSelected(response.data.data));
         }).catch(function (err) {
             console.log(err);
@@ -83,13 +83,13 @@ export function interactionUnselected() {
 
 export function addInteraction(contact_id, data) {
     // persist data in DB
-    return (dispatch) => { 
-       
-        return axios.post('/contacts/'+contact_id+'/interactions', data).then(response => { 
-            
+    return (dispatch) => {
+
+        return axios.post('/contacts/'+contact_id+'/interactions', data).then(response => {
+
             // set id
             data.id = response.data.interaction_id;
-            
+
             dispatch({
                 type: 'ADD_INTERACTION',
                 payload: {
@@ -97,14 +97,14 @@ export function addInteraction(contact_id, data) {
                 }
             });
         })
-    }   
+    }
 }
 
 export function saveInteraction(contact_id, data) {
      // persist data in DB
-    return (dispatch) => { 
+    return (dispatch) => {
 
-        return axios.put('/contacts/'+contact_id+'/interactions/'+data.id, data).then(response => { 
+        return axios.put('/contacts/'+contact_id+'/interactions/'+data.id, data).then(response => {
             dispatch({
                 type: 'SAVE_INTERACTION',
                 payload: {
@@ -117,9 +117,9 @@ export function saveInteraction(contact_id, data) {
 
 export function removeInteraction(contact_id, interaction_id) {
     // remove data from DB
-    return (dispatch) => { 
-
-        return axios.delete('/contacts/'+contact_id+'/interactions/'+interaction_id).then(response => { 
+    return (dispatch) => {
+        let URL = `/contacts/${contact_id}/interactions/${interaction_id}`
+        return axios.delete(URL).then(response => {
             dispatch({
                 type: 'REMOVE_INTERACTION',
                 payload: {
@@ -129,6 +129,3 @@ export function removeInteraction(contact_id, interaction_id) {
         })
     }
 }
-
-
-

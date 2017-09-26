@@ -8,6 +8,7 @@ import Form from './form'
 import Actions from './tableActions'
 import swal from 'sweetalert2'
 import _ from 'lodash'
+import Validate from 'Commons/hoc/validate'
 
 class UserPage extends Component {
 
@@ -51,14 +52,14 @@ class UserPage extends Component {
                 width: "190"
             }, {
                 title: "Acciones",
-                formatter: this.formatTableActions, // already binded 
+                formatter: this.formatTableActions, // already binded
                 sort: false,
                 dataAlign: "center",
                 width: "90"
             }
             ],
             selected: {}
-        }   
+        }
 
         // fetch data
         this.props.fetchUserList();
@@ -66,19 +67,19 @@ class UserPage extends Component {
 
     /**
      * Table actions column
-     * 
-     * @param {*} cell 
-     * @param {*} row 
+     *
+     * @param {*} cell
+     * @param {*} row
      */
-    formatTableActions(cell, row) {     
-      
+    formatTableActions(cell, row) {
+
         const actions = <Actions onEdit={this.onEditClicked} onDelete={this.onDeleteClicked} />;
         return React.cloneElement(actions, {id: row.id});
     }
 
     /**
      * On edit action clicked
-     * @param {int} id 
+     * @param {int} id
      */
     onEditClicked(id) {
         const user = this.props.users.find((user)=>{ return user.id === id });
@@ -87,7 +88,7 @@ class UserPage extends Component {
 
     /**
      * On delete action clicked
-     * @param  id 
+     * @param  id
      */
     onDeleteClicked(id) {
 
@@ -97,7 +98,7 @@ class UserPage extends Component {
             ... config.tables.onDeleteSwal,
             text: "Se eliminará el usuario"
         }).then(function () {
-            self.props.onRemoveUser(id).then(_=>{   
+            self.props.onRemoveUser(id).then(_=>{
                 self.props.flashSuccess({
                     text: "Se ha eliminado el registro",
                     target: "list"
@@ -108,58 +109,48 @@ class UserPage extends Component {
                     text: "Hubo un error eliminando el registro",
                     target: "list"
                 })
-            }); 
-        }, function(dismiss) { 
-            console.log("dismiss deleting");          
-        })        
+            });
+        }, function(dismiss) {
+            console.log("dismiss deleting");
+        })
+    }
+
+    showErrorMessage = () => {
+      this.props.flashError({
+          text: "Hubo un error al guardar los datos",
+          target: "form"
+      })
     }
 
     /**
      * On form submitted
-     * 
-     * @param {obj} data 
+     *
+     * @param {obj} data
      */
     onSaveUser(data) {
-       
+
         const self = this;
 
         // remove empty values
-        data = _.omitBy(data, x=>{ return _.isNil(x) || x == ''}); 
-      
+        data = _.omitBy(data, x=>{ return _.isNil(x) || x == ''});
+
         if(!data.id) {
-            this.props.onAddUser(data).then(response=>{
+            return this.props.onAddUser(data).then(response=>{
                 self.props.flashSuccess({
                     text: "Se ha guardado los datos",
                     target: "form"
                 });
-                self.resetForm();                            
-            }).catch(err=>{          
-                self.props.flashError({
-                    text: "Hubo un error al guardar los datos",
-                    target: "form"
-                })
-            });
+                self.resetForm();
+            })
         } else {
-            this.props.onSaveUser(data).then((response, code)=>{
+            return this.props.onSaveUser(data).then((response, code)=>{
                 self.props.flashSuccess({
                     text: "Se ha guardado los datos",
                     target: "form"
-                });     
-                self.resetForm();             
-            }).catch(err=>{
-                if(err.response && err.response.status == 422) {
-                    self.props.flashWarning({
-                        text: "Validación pendiente ¯\_(ツ)_/¯",
-                        target: "form"
-                    })
-                } else { 
-                    self.props.flashError({
-                        text: "Hubo un error al guardar los datos",
-                        target: "form"
-                    })
-                }                
+                });
+                self.resetForm();
             });
-        }        
+        }
     }
 
     /**
@@ -180,7 +171,7 @@ class UserPage extends Component {
     }
 
     render() {
-     
+
         const options = config.tables.defaults;
 
         return (
@@ -203,16 +194,16 @@ class UserPage extends Component {
                             </div>
 
                             {
-                                (this.props.users) && 
+                                (this.props.users) &&
 
-                                <BootstrapTable data={this.props.users} striped={true} hover={true} 
-                                    options={options} search searchPlaceholder='Buscar...' pagination>                                    
-                                    {                                        
+                                <BootstrapTable data={this.props.users} striped={true} hover={true}
+                                    options={options} search searchPlaceholder='Buscar...' pagination>
+                                    {
                                         this.state.columns.map((col, index)=>{
-                                           
-                                            return <TableHeaderColumn 
+
+                                            return <TableHeaderColumn
                                                 key={index}
-                                                dataField={col.field} 
+                                                dataField={col.field}
                                                 isKey={col.isKey}
                                                 width={col.width}
                                                 dataAlign={col.dataAlign}
@@ -228,11 +219,18 @@ class UserPage extends Component {
                     </div>
                 </div>
                 <div className="col-md-6">
-                    <Form data={this.state.selected} 
-                        roles={this.props.roles}
-                        fetchUserRoles={this.props.fetchUserRoles}
-                        onSaveUser={this.onSaveUser} 
-                        onCancel={this.onCancel} />                    
+                  <Validate onSubmit={this.onSaveUser} errorCallback={this.showErrorMessage}>
+                    {(errors, onSubmit) => {
+                      return (
+                        <Form data={this.state.selected}
+                            roles={this.props.roles}
+                            errors={errors}
+                            fetchUserRoles={this.props.fetchUserRoles}
+                            onSaveUser={onSubmit}
+                            onCancel={this.onCancel} />
+                      )
+                    }}
+                  </Validate>
                 </div>
             </div>
         );

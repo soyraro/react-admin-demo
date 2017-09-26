@@ -13,7 +13,8 @@ import 'react-select/dist/react-select.css'
 import 'react-bootstrap-table/dist/react-bootstrap-table.min.css'
 import 'react-quill/dist/quill.snow.css'
 import 'sweetalert2/dist/sweetalert2.css'
-import './static/assets/custom.css'
+import 'react-day-picker/lib/style.css'
+import './static/custom.scss'
 
 class AppContainer extends Component {
     

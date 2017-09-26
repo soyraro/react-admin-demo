@@ -28,7 +28,12 @@ class Sale extends Model
     
     public function products()
     {
-        return $this->belongsToMany('App\Product')->withPivot('quantity');
+        return $this->belongsToMany('App\Product')->withPivot(['quantity', 'currency_id', 'fob_price', 'quotation_group_id']);
+    }
+    
+    public function quotationGroups()
+    {
+        return $this->hasMany('App\QuotationGroup');
     }
     
     public function currency()
@@ -44,10 +49,5 @@ class Sale extends Model
     public function logs()
     {
         return $this->hasMany('App\SaleStatusLog');
-    }
-    
-    public function quotation()
-    {
-        return $this->hasOne('App\Quotation');
-    }
+    }    
 }

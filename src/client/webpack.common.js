@@ -3,7 +3,8 @@ const webpack = require('webpack')
 const config = require('./config')
 const debug = require('debug')('app:config')
 const fs = require('fs-extra')
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 debug('Copying static assets to dist folder.')
 fs.copySync(config.dir_static, config.dir_dist)
@@ -19,7 +20,23 @@ module.exports = {
         publicPath : config.compiler_public_path
     },
     resolve: {
-        extensions: ['.js']
+        extensions: ['.js'],
+        alias: {
+            Commons: path.resolve(__dirname, 'src/Commons/'),
+            Config: path.resolve(__dirname, 'src/config/'),
+            Contacts: path.resolve(__dirname, 'src/Contacts/'),
+            Enterprises: path.resolve(__dirname, 'src/Enterprises/'),
+            FlashMessages: path.resolve(__dirname, 'src/FlashMessages/'),
+            Interactions: path.resolve(__dirname, 'src/Interactions/'),
+            Layout: path.resolve(__dirname, 'src/Layout/'),
+            Products: path.resolve(__dirname, 'src/Products/'),
+            Providers: path.resolve(__dirname, 'src/Providers/'),
+            Sales: path.resolve(__dirname, 'src/Sales/'),
+            Sectors: path.resolve(__dirname, 'src/Sectors/'),
+            Session: path.resolve(__dirname, 'src/Session/'),
+            Tasks: path.resolve(__dirname, 'src/Tasks/'),
+            Users: path.resolve(__dirname, 'src/Users/')
+        }
     },
     plugins: [
         // new webpack.NoEmitOnErrorsPlugin()    
@@ -35,6 +52,10 @@ module.exports = {
             minify   : {
                 collapseWhitespace : true
             }
+        }),
+        new ExtractTextPlugin({ // define where to save the file
+            filename: '[name].bundle.css',
+            allChunks: true
         })
     ], 
     module: {
@@ -47,19 +68,16 @@ module.exports = {
             }, {
                 test   : /\.json$/,
                 loader : 'json-loader'
-                },
-            {
+            },
+            {   // regular css files
                 test: /\.css$/,
-                use: [
-                    'style-loader',
-                    {
-                        loader: 'css-loader',
-                        options: {
-                            sourceMap: true,
-                            minimize: true || {/* CSSNano Options */}
-                        }
-                    }                    
-                ]
+                use: ExtractTextPlugin.extract({
+                    use: 'css-loader?importLoaders=1'
+                })
+            },
+            {   // sass / scss loader for webpack
+                test: /\.(sass|scss)$/,
+                use: ExtractTextPlugin.extract(['css-loader', 'sass-loader'])
             },
             {
                 test: /\.(png|svg|jpg|gif)$/,

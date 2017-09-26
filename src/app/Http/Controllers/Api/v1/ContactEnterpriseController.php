@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Contact;
 use App\ContactState;
+use App\Email;
 use App\Http\Controllers\Controller;
 use App\Transformers\ContactListTransformer;
 use App\Transformers\ContactTransformer;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Fractal\FractalFacade;
+use function fractal;
+use function response;
 
 class ContactEnterpriseController extends Controller
 {
@@ -242,17 +245,20 @@ class ContactEnterpriseController extends Controller
             $contact->enterprises()->updateExistingPivot($enterprise_id, ['state_id' => $state_id]);
             $contact->sectors()->sync($sector_id);
             
+            // remove previous emails if necessary and update with new data
+            $existing_emails = array_map(function($x) {return $x['email'];}, $request->input('emails')); // get client side data emails 
+            Email::where('contact_id', $contact->id)->whereNotIn('email', $existing_emails)->delete(); // remove not matching emails
+            
             foreach($request->input('emails') as $email) {
+                
                 if(!empty($email['id'])) {
-                    // update existing
-                    DB::table('emails')
-                        ->where('id', $email['id'])
-                        ->where('contact_id', $contact->id)
-                        ->update(['email' => $email['email']]);
+                   // update existing
+                    Email::where('id', $email['id'])
+                       ->where('contact_id', $contact->id)
+                       ->update(['email' => $email['email']]);
                 } else {
                     // create new
-                    DB::table('emails')
-                        ->insert(['email' => $email['email'], 'contact_id'=> $contact->id]);
+                    Email::insert(['email' => $email['email'], 'contact_id'=> $contact->id]);
                 }
             }
             

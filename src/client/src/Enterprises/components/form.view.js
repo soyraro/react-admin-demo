@@ -1,8 +1,8 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-import Select from 'react-select'
 import ReactQuill from 'react-quill'
 import FlashMessages from '../../FlashMessages'
+import { Input, DropdownList, RadioGroup, Radio } from 'Commons/components/form'
 
 class Form extends Component {
 
@@ -30,10 +30,6 @@ class Form extends Component {
         this.cancel = this.cancel.bind(this);
     }
 
-    componentWillReceiveProps(newProps) { 
-        this.setState(newProps.data);
-    }
-
     save() {
 
         const data = {
@@ -52,7 +48,8 @@ class Form extends Component {
     render() {
 
         const data = this.state;
-         
+        const {errors} = this.props;
+       
         return (
 
             <div className="portlet light bordered">
@@ -84,134 +81,105 @@ class Form extends Component {
                         <div className="form-body">
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-6 col-lg-6">
-                                    <div className="form-group">
-                                        <label>Razón Social</label>
-                                        <input type="text" 
-                                            className="form-control text-uppercase" 
-                                            placeholder="Razón Social"
-                                            name="legal_name"
-                                            value={data.legal_name}
-                                            onChange={this.props.handleInputChange} />                                            
-                                    </div>
-                                </div>
 
-                                <div className="col-xs-12 col-sm-4 col-lg-3">
-                                    <div className="form-group">
-                                        <label>CUIT</label>
-                                        <input type="text" 
-                                            className="form-control" 
-                                            placeholder="CUIT"
-                                            name="cuit"
-                                            value={data.cuit}
-                                            onChange={this.props.handleInputChange} />
-                                    </div>
-                                </div>
+                                <Input
+                                    classnames="col-xs-12 col-sm-6 col-lg-6"
+                                    inputclass="form-control text-uppercase"
+                                    label="Razón Social"
+                                    name="legal_name"
+                                    value={data.legal_name}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['legal_name'])}
+                                    />
 
-                                <div className="col-xs-12 col-sm-2 col-lg-2">
-                                    <div className="form-group">
-                                        <div className="mt-radio-inline">
-                                            <label className="mt-radio">
-                                                Cliente
-                                                <input type="radio" value="cliente" name="client_type" 
-                                                    checked={data.client_type == 'cliente'} 
-                                                    onChange={e=>{this.props.handleOptionChange("client_type", e.target.value)}} />
-                                                <span></span>
-                                            </label>
-                                            <label className="mt-radio">
-                                                Otros clientes
-                                                <input type="radio" value="otros_clientes" name="client_type" 
-                                                    checked={data.client_type == 'otros_clientes'} 
-                                                    onChange={e=>{this.props.handleOptionChange("client_type", e.target.value)}} />
-                                                <span></span>
-                                            </label>
-                                        </div>
-                                    </div>  
-                                </div>                                    
+                                <Input
+                                    classnames="col-xs-12 col-sm-4 col-lg-3"
+                                    label="CUIT"
+                                    name="cuit"
+                                    value={data.cuit}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['cuit'])}
+                                    />
+
+                                <RadioGroup
+                                    classnames="col-xs-12 col-sm-2 col-lg-2"
+                                    name="client_type"
+                                    selectedValue={data.client_type}
+                                    onChange={value=>{this.props.handleOptionChange("client_type", value)}}
+                                    errorMessage={errors.messageContainer(errors['client_type'])}>
+
+                                    <Radio value="cliente" label="Cliente" />                               
+                                    <Radio value="otros_clientes" label="Otros clientes" />                                
+                                </RadioGroup>
                             </div>
 
                             <div className="row">
-                                <div className="col-xs-12 col-sm-4 col-lg-3">
-                                    <div className="form-group">
-                                        <label>País</label>
-                                        { this.props.countries.length > 0 && data.country &&
-                                            <Select
-                                                name="country"
-                                                placeholder="Seleccione..."
-                                                value={data.country.id}
-                                                options={this.props.countries}
-                                                onChange={obj=>{this.props.handleCountryChange(obj)}}
-                                                />
-                                        }                                  
-                                    </div>
-                                </div>
-
-                                <div className="col-xs-12 col-sm-4 col-lg-3">
-                                    <div className="form-group">
-                                        <label>Provincia</label>
-                                        { this.props.provinces.length > 0 && data.province &&
-                                            <Select
-                                                name="province"
-                                                placeholder="Seleccione..."
-                                                noResultsText="Sin resultados"
-                                                value={data.province.id}
-                                                options={this.props.provinces}
-                                                onChange={obj=>{this.props.handleOptionChange("province", obj)}}
-                                                />
-                                        }    
-                                    </div>
-                                </div>
-
-                                <div className="col-xs-12 col-sm-4 col-lg-3">
-                                    <div className="form-group">
-                                        <label>Localidad</label>
-                                        <input type="text" 
-                                            className="form-control" 
-                                            placeholder="Localidad" 
-                                            name="town"
-                                            value={data.town}
-                                            onChange={this.props.handleInputChange} />
-                                    </div>
-                                </div>
-
+                     
+                                { this.props.countries.length > 0 && data.country &&
+                                    <DropdownList
+                                        classnames="col-xs-12 col-sm-4 col-lg-3"
+                                        name="country"
+                                        label="País"
+                                        value={data.country.id}
+                                        list={this.props.countries}
+                                        handle={(field, obj)=>{this.props.handleCountryChange(obj)}}
+                                        errorMessage={errors.messageContainer(errors['country'])}
+                                        />
+                                }                                  
+                        
+                                { this.props.provinces.length > 0 && data.province &&
+                                    <DropdownList
+                                        classnames="col-xs-12 col-sm-4 col-lg-3"
+                                        name="province"
+                                        label="Provincia"
+                                        value={data.province.id}
+                                        list={this.props.provinces}
+                                        handle={this.props.handleOptionChange}
+                                        errorMessage={errors.messageContainer(errors['province'])}
+                                        />
+                                }    
+                                
+                                <Input
+                                    classnames="col-xs-12 col-sm-4 col-lg-3"
+                                    label="Localidad"
+                                    name="town"
+                                    value={data.town}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['town'])}
+                                    />
                             </div>
 
                              <div className="row">
-                                <div className="col-xs-12 col-sm-4 col-lg-2">
-                                    <div className="form-group">
-                                        <label>Código Postal</label>
-                                        <input type="text" 
-                                            className="form-control" 
-                                            placeholder="Cód. Postal" 
-                                            name="zipcode"
-                                            value={data.zipcode}
-                                            onChange={this.props.handleInputChange} />
-                                    </div>
-                                </div>
 
-                                <div className="col-xs-12 col-sm-8 col-md-10 col-lg-7">
-                                    <div className="form-group">
-                                        <label>Dirección</label>
-                                        <input type="text" 
-                                            className="form-control" 
-                                            placeholder="Dirección" 
-                                            name="address"
-                                            value={data.address}
-                                            onChange={this.props.handleInputChange} />
-                                    </div>
-                                </div>
+                                <Input
+                                    classnames="col-xs-12 col-sm-4 col-lg-2"
+                                    label="Código Postal"
+                                    placeholder="Cód. Postal" 
+                                    name="zipcode"
+                                    value={data.zipcode}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['zipcode'])}
+                                    />                           
+
+                                <Input
+                                    classnames="col-xs-12 col-sm-8 col-md-10 col-lg-7"
+                                    label="Dirección"
+                                    name="address"
+                                    value={data.address}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['address'])}
+                                    />                    
                             </div>    
 
-                            <div className="row">             
-                                <div className="form-group  col-xs-12 col-sm-12 col-md-8 col-lg-9">
-                                    <label>Teléfonos</label>
-                                    <input type="text" 
-                                        className="form-control" 
-                                        placeholder="Teléfonos"
-                                        name="phone"
-                                        value={data.phone}
-                                        onChange={this.props.handleInputChange} />
-                                </div>
+                            <div className="row">   
+                                <Input
+                                    classnames="form-group col-xs-12 col-sm-12 col-md-8 col-lg-9"
+                                    label="Teléfonos"
+                                    name="phone"
+                                    value={data.phone}
+                                    handle={this.props.handleInputChange}
+                                    errorMessage={errors.messageContainer(errors['phone'])}
+                                    />
                             </div>  
 
                             <div className="row">

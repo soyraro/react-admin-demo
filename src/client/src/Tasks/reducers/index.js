@@ -5,18 +5,17 @@ const skel = {
 }
 
 function tasks (state = skel, action) {
+    switch (action.type) {
+        case 'TASK_LIST_SUCCESS':
 
-    switch (action.type) {  
-        case 'TASK_LIST_SUCCESS':   
-               
-            return Object.assign({}, {
+            return Object.assign({}, state, {
                 created: action.payload.list.created,
                 assigned: action.payload.list.assigned
-            });  
+            });
         case 'TASK_SELECTED':
             return Object.assign({}, state, {
                 selected: action.payload.data
-            }); 
+            });
         case 'TASK_UNSELECTED':
             return Object.assign({}, state, {
                 selected: undefined
@@ -36,10 +35,10 @@ function tasks (state = skel, action) {
                 }
                 return item
             })
-           
+
             return Object.assign({}, state, {
                 assigned: updated_list
-            });  
+            });
         case 'SAVE_TASK':
             // replace item ONLY in "created by me" list
             const updatedList = state.created.map(item => {
@@ -49,18 +48,24 @@ function tasks (state = skel, action) {
                 }
                 return item
             })
-           
+
             return Object.assign({}, state, {
                 created: updatedList
-            });        
+            });
         case 'REMOVE_TASK':
             return Object.assign({}, state, {
                 created: state.created.filter( (task) => { return task.id !== action.payload.id } ),
                 assigned: state.assigned.filter( (task) => { return task.id !== action.payload.id } )
-            });                 
+            });
+        case 'ADD_COMMENT':
+            const {comment} = action
+            const {selected} = state
+            const comments = [comment].concat(selected.comments)
+            const new_selected = {...selected, comments}
+            return {...state, ...{selected: new_selected}}
         default:
             return state
     }
 }
 
-export default tasks 
+export default tasks
